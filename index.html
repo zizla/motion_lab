@@ -64,8 +64,6 @@ h1 em{font-style:normal; color:var(--p)}
 .badge{display:inline-flex; align-items:center; gap:6px; margin-left:auto; font:700 10.5px/1 var(--mono); letter-spacing:1.1px; text-transform:uppercase; padding:5px 9px; border-radius:999px; border:1px solid}
 .badge .dot{width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2.4s ease-in-out infinite}
 .badge.live{color:var(--g); border-color:#99D8CF; background:#ECFBF8}
-.badge.soon{color:var(--a); border-color:#EFD3A8; background:#FDF6E9}
-.badge.soon .dot{animation:none}
 @keyframes pulse{0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.35; transform:scale(.8)}}
 .card h2{margin:12px 0 4px; padding:0 20px; font-size:clamp(19px,2.1vw,23px); line-height:1.3; letter-spacing:-.6px; font-weight:800}
 .card h2 .en{display:block; margin-top:6px; font:500 12.5px/1.45 var(--mono); letter-spacing:0; color:var(--mute)}
@@ -78,9 +76,6 @@ h1 em{font-style:normal; color:var(--p)}
 .meta{font:500 11.5px/1.5 var(--mono); color:var(--mute); flex:1; min-width:0}
 .cta{flex:none; display:inline-flex; align-items:center; gap:7px; font-weight:800; font-size:13px; letter-spacing:-.2px; color:#fff; background:var(--ink); padding:9px 14px; border-radius:5px; transition:background .14s}
 .card:hover .cta{background:var(--p)}
-.card.soon .cta{background:transparent; color:var(--a); border:1px solid #EFD3A8}
-.card.soon:hover .cta{background:#FDF6E9; color:var(--a)}
-.card.soon{background:linear-gradient(180deg,#FFFFFF 0%,#FBFCFE 100%)}
 
 /* ── footer ── */
 footer{border-top:1px solid var(--line); background:#fff}
@@ -162,10 +157,10 @@ footer{border-top:1px solid var(--line); background:#fff}
       </div>
     </a>
 
-    <a class="card soon" href="./eda/">
+    <a class="card" href="./eda/">
       <div class="chead">
         <span class="num">02</span>
-        <span class="badge soon"><i class="dot" aria-hidden="true"></i>준비 중</span>
+        <span class="badge live"><i class="dot" aria-hidden="true"></i>Live</span>
       </div>
       <h2>탐색적 데이터 분석 EDA 모션<span class="en">Six movements of exploratory data analysis</span></h2>
       <canvas class="pv" data-kind="eda" aria-hidden="true"></canvas>
@@ -179,8 +174,8 @@ footer{border-top:1px solid var(--line); background:#fff}
       </ul>
       <p class="desc">모델을 세우기 전에 데이터를 먼저 들여다보는 여섯 가지 움직임 — 분포가 막대를 키우고, NaN 셀이 대체값으로 날아가고, 공분산 타원이 이상치를 가려내고, 잡음 슬라이더가 상관계수를 흔듭니다. 통계량은 매 프레임 실제로 계산합니다.</p>
       <div class="cfoot">
-        <span class="meta">6개 모듈 · 곧 이 주소(<code>./eda/</code>)에서 열립니다</span>
-        <span class="cta">곧 공개</span>
+        <span class="meta">6개 모듈 · 슬라이더 조작 · ? 카드 해설 · KO/EN</span>
+        <span class="cta">열기 →</span>
       </div>
     </a>
 
@@ -223,9 +218,9 @@ footer{border-top:1px solid var(--line); background:#fff}
   var pts = (function () {
     var rnd = lcg(20261127), out = [], i, j, c, cx, cy;
     for (c = 0; c < 2; c++) {
-      cx = c === 0 ? 0.30 : 0.68; cy = c === 0 ? 0.32 : 0.66;
-      for (i = 0; i < 34; i++) {
-        out.push({ x: cx + gauss(rnd) * 0.085, y: cy + gauss(rnd) * 0.085, c: c });
+      cx = c === 0 ? 0.31 : 0.67; cy = c === 0 ? 0.33 : 0.67;
+      for (i = 0; i < 44; i++) {
+        out.push({ x: cx + gauss(rnd) * 0.105, y: cy + gauss(rnd) * 0.105, c: c });
       }
     }
     return out;

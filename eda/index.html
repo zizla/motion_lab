@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EDA — 탐색적 데이터 분석 6가지 움직임</title>
+<style>
+:root{--bg:#E5E7EB;--ink:#111827;--mute:#6B7280;--gray:#9CA3AF;--pur:#9331E9;--blue:#2563EB;--red:#EF4444;--teal:#0F766E;--amber:#D97706;--pink:#DB2777}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--ink);padding:9px 16px}
+.hrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:1400px;margin:0 auto}
+h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.2px;flex:1;min-width:240px}
+h1 .em{font-weight:500;color:var(--mute);font-size:12.5px;margin-left:5px}
+.nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+button{font:inherit;font-size:12.5px;border:1px solid var(--ink);background:#fff;color:var(--ink);padding:5px 10px;border-radius:6px;cursor:pointer;line-height:1.2}
+button:hover{background:#F3F4F6}
+button.on{background:var(--ink);color:#fff}
+button.acc{border-color:var(--pur);color:var(--pur)}
+button.acc.on{background:var(--pur);color:#fff}
+button.sq{width:26px;height:26px;padding:0;border-radius:50%;font-size:13px;font-weight:700;line-height:1}
+.hint{font-size:12px;color:var(--mute);max-width:1400px;margin:6px auto 0;line-height:1.5}
+main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:16px;max-width:1400px;margin:0 auto}
+@media(max-width:1020px){main{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){header{position:static}main{grid-template-columns:1fr;padding:10px;gap:10px}h1{font-size:15px}h1 .em{display:block;margin:2px 0 0}}
+.card{background:#fff;border:1px solid var(--ink);display:flex;flex-direction:column;position:relative;min-width:0}
+.hd{display:flex;align-items:center;gap:7px;padding:9px 11px 2px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--mute)}
+.ttl{font-weight:700;font-size:14.5px;flex:1;line-height:1.25}
+.ttl small{font-weight:500;color:var(--mute);font-size:11.5px;margin-left:4px}
+.rep,.q{width:22px;height:22px;border-radius:50%;padding:0;font-size:12px;font-weight:700;flex:none;line-height:1}
+.rep{color:var(--mute);border-color:#D1D5DB}
+.fx{padding:2px 11px 7px;font-family:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;font-size:15px;min-height:26px;white-space:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.fx::-webkit-scrollbar{display:none}
+.fx.small{font-size:13px}
+canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;border-top:1px dashed #E5E7EB;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+.ctl{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:7px 11px 3px;border-top:1px dashed #E5E7EB;min-height:34px}
+.seg{display:flex;border:1px solid #D1D5DB;border-radius:7px;overflow:hidden}
+.seg button{border:0;border-right:1px solid #D1D5DB;border-radius:0;padding:4px 8px;font-size:11.5px;background:#fff}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--pur);color:#fff}
+.pbox{display:flex;align-items:center;gap:6px;border:1px solid #D1D5DB;border-radius:7px;padding:3px 7px;flex-wrap:nowrap}
+.pbox .lb{font-size:11px;color:var(--mute);white-space:nowrap}
+.pbox input[type=range]{width:82px;accent-color:var(--pur);margin:0}
+.pval{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--pur);font-weight:700;font-size:11.5px;min-width:38px;text-align:right}
+.chk{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.chk input{accent-color:var(--pur);margin:0}
+.ft{display:flex;justify-content:space-between;align-items:flex-end;padding:6px 11px 2px;gap:8px}
+.val{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:18px;font-weight:700;white-space:nowrap;line-height:1.25}
+.sub{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;color:var(--mute);text-align:right;line-height:1.5}
+.use{padding:2px 11px 9px;font-size:11.5px;color:var(--mute);line-height:1.45}
+.use b{color:var(--ink);font-weight:600}
+.tip{display:none;position:absolute;top:34px;left:8px;right:8px;background:var(--ink);color:#fff;font-size:12.5px;line-height:1.65;padding:10px 12px;border-radius:8px;z-index:8;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.tip b{color:#FDE68A}
+.card.showtip .tip{display:block}
+footer{max-width:1400px;margin:0 auto;padding:0 16px 26px;font-size:11.5px;color:var(--mute);line-height:1.65}
+/* modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:70;padding:18px;overflow:auto}
+.modal.open{display:flex;align-items:flex-start;justify-content:center}
+.mbox{background:#fff;border:1px solid var(--ink);border-radius:6px;max-width:780px;width:100%;margin:auto;padding:16px 20px 20px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.mhd{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.mhd b{font-size:15px}
+#mbody{font-size:13px;line-height:1.7}
+#mbody h3{font-size:13.5px;margin:14px 0 3px;color:var(--ink)}
+#mbody h3 span{color:var(--mutE,#6B7280);font-weight:500}
+#mbody p{margin:0 0 6px;color:#374151}
+#mbody .mfoot{margin-top:14px;padding-top:10px;border-top:1px dashed #D1D5DB;font-size:12px;color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>Exploratory Data Analysis <span class="em" data-k="h1sub"></span></h1>
+    <div class="nav">
+      <button id="play" class="on"></button>
+      <button id="reset" data-k="reset"></button>
+      <button id="helpbtn" class="sq acc" aria-label="help">?</button>
+      <button id="lang"></button>
+    </div>
+  </div>
+  <div class="hint" data-k="hint"></div>
+</header>
+<main id="grid"></main>
+<footer data-k="foot"></footer>
+<div class="modal" id="modal">
+  <div class="mbox">
+    <div class="mhd"><b data-k="help"></b><button id="mclose" class="sq">×</button></div>
+    <div id="mbody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================== 텍스트 (KO / EN) ============================== */
+const T = {
+ko:{
+ h1sub:"— 6개의 움직임으로 배우는 탐색적 데이터 분석",
+ play:"⏸ 일시정지", paused:"▶ 전체 재생", reset:"초기화", help:"도움말",
+ hint:"슬라이더를 움직이고 그래프를 드래그해 보세요 · Space 재생/정지 · ? 카드별 해설",
+ foot:"원작 아이디어: X @mathemetica — EDA 16초 모션 애니메이션. 모든 데이터는 시드 고정 난수로 만든 합성 데이터이고, 통계량은 매 프레임 실제로 계산됩니다. 단일 HTML 파일 · 외부 라이브러리 없음 · 오프라인 동작.",
+ t_hist:["분포 · 히스토그램","Distribution"], t_miss:["결측값 대체","Missing values"], t_out:["이상치 · 마할라노비스","Outliers"],
+ t_corr:["피어슨 상관계수","Pearson r"], t_seas:["계절성 분해","Seasonality"], t_box:["열 유형 · 상자그림","Column types & box plot"],
+ u_hist:"<b>언제?</b> 수집 직후 분포의 모양을 확인 · 구간 수에 따라 봉우리와 꼬리가 다르게 보입니다",
+ u_miss:"<b>언제?</b> 결측 20% 이하면 평균·중앙값, 범주형이면 최빈값 · 무작위 결측일 때만 안전",
+ u_out:"<b>언제?</b> 변수끼리 상관이 있으면 유클리드 대신 마할라노비스 · 다변량 이상치 탐지",
+ u_corr:"<b>언제?</b> 두 수치형 변수의 선형 관계 · 상관은 인과가 아니고, 이상치 하나에 크게 흔들립니다",
+ u_seas:"<b>언제?</b> 월별 매출·기온처럼 주기 패턴이 있는 시계열에서 추세를 분리",
+ u_box:"<b>언제?</b> 열 타입 점검 뒤 분포 요약 · 1.5·IQR 규칙으로 이상치 경계 설정",
+ q_hist:"데이터를 같은 폭의 구간(bin)으로 나눠 개수를 세는 그래프입니다. 구간이 적으면 뭉개지고, 많으면 톱니처럼 흔들립니다(표본 잡음). np.histogram(x, bins=k)에 그대로 대응합니다. 보라색 곡선은 커널 밀도 추정(가우시안, h=0.28)입니다.",
+ q_miss:"결측(NaN)을 열의 대표값으로 채웁니다. <b>평균</b>은 대칭 분포에, <b>중앙값</b>은 치우친 분포·이상치에 강하고, <b>최빈값</b>은 범주형에 씁니다. 대체는 분산을 줄이고(과소평가) 변수 간 상관을 약하게 만듭니다 — 채운 뒤 σ가 어떻게 변하는지 보세요. 결측이 30%를 넘거나 무작위가 아니면 대체 대신 행 삭제·모델 기반 대체를 검토합니다.",
+ q_out:"점들이 길쭉하게 늘어선 구름에서, 중심에서의 유클리드 거리는 구름의 끝(정상)도 이상치로 만들고 대각선 방향의 진짜 이탈은 놓칩니다. 공분산 Σ로 각 축을 표준화·회전한 마할라노비스 거리는 등고선(타원) 안팎으로 판정합니다. d² 는 자유도 2인 χ²를 따르므로 임계값 χ²=5.99가 95% 경계입니다. 점을 끌어 옮겨 판정이 뒤집히는 순간을 확인해 보세요.",
+ q_corr:"두 변수의 함께 변하는 정도를 −1~1로 잰 값입니다. 분자 Σ(x−x̄)(y−ȳ)는 '같은 방향으로 벗어난 정도'라, 오른쪽 위·왼쪽 아래에 점이 몰리면 커집니다. 잡음을 올리면 구름이 퍼지며 r이 0으로, 내리면 직선에 붙으며 1로 갑니다. r² 은 y 분산 중 선형으로 설명되는 비율이고, 기울기는 단위가 달라 r과 다릅니다.",
+ q_seas:"시계열을 추세 T, 계절 S, 잔차 ε로 나눠 봅니다. 더해지는 모형(additive)에서 관측값 = T + S + ε 이므로, 추세를 빼면 반복 패턴이, 계절을 빼면 잔차가 남습니다. 주기를 12로 두면 연간 계절성, 7이면 요일 주기입니다. 재생 헤드를 끌어 특정 시점의 T·S·ε 값을 확인하세요.",
+ q_box:"열의 타입을 먼저 점검합니다 — 날짜가 object로 들어오면 정렬·기간 계산이 깨지고, 숫자 열의 NaN은 이후 모든 계산을 오염시킵니다. 상자그림은 Q1·중앙값·Q3와 1.5·IQR 울타리를 보여 줍니다. 상자 밖 점은 '규칙상' 이상치일 뿐 오류는 아니므로, 값의 맥락을 확인한 뒤 다룹니다.",
+ normal:"정규", skewed:"치우침", bimodal:"이봉", bins:"구간 수", auto:"자동",
+ boxnote1:"상자 = Q₁~Q₃ (가운데 50%) · 수염 = 울타리 안 최댓·최솟값", boxnote2:"1.5·IQR 밖의 점은 규칙상 이상치 — 값의 맥락을 확인",
+ mean:"평균 대체", median:"중앙값 대체", mode:"최빈값 대체", remiss:"결측 다시",
+ maha:"마할라노비스", euc:"유클리드", thr:"임계값",
+ noise:"잡음", period:"주기(개월)", amp:"계절 진폭", skew:"치우침", showOut:"이상치",
+ obs:"관측값", trend:"추세", season:"계절", resid:"잔차", before:"관측", after:"대체",
+ outl:"이상치", norm:"정상", filled:"채움", missing:"결측",
+ m_intro:"여섯 카드는 탐색적 데이터 분석(EDA)의 기본 동작을 각각 하나씩 보여 줍니다. 모두 실제로 계산되는 값이고, 슬라이더·드래그로 즉시 반응합니다.",
+ m_keys:"단축키: Space 재생/정지 · Esc 도움말 닫기. 각 카드의 ? 를 누르면 그 카드의 해설이 카드 위에 겹쳐 나옵니다."
+},
+en:{
+ h1sub:"— Six living movements of exploratory data analysis",
+ play:"⏸ Pause", paused:"▶ Play all", reset:"Reset", help:"Help",
+ hint:"Move the sliders, drag the plots · Space to play/pause · ? for per-card notes",
+ foot:"Idea after X @mathemetica — a 16-second EDA motion animation. All data are synthetic with fixed seeds; every statistic is computed live each frame. Single HTML file · no libraries · works offline.",
+ t_hist:["Distribution","Histogram"], t_miss:["Missing values","Imputation"], t_out:["Outliers","Mahalanobis"],
+ t_corr:["Pearson correlation","r"], t_seas:["Seasonality","Decomposition"], t_box:["Column types","Box plot"],
+ u_hist:"<b>Use:</b> first look at a distribution · the bin count changes what peaks and tails you see",
+ u_miss:"<b>Use:</b> under ~20% MCAR missingness — mean/median for numbers, mode for categories",
+ u_out:"<b>Use:</b> when variables correlate, use Mahalanobis instead of Euclidean · multivariate outliers",
+ u_corr:"<b>Use:</b> linear relation between two numeric columns · correlation is not causation and one outlier can move it",
+ u_seas:"<b>Use:</b> monthly sales or temperature · separate a repeating pattern from the trend",
+ u_box:"<b>Use:</b> after checking dtypes · summarise spread and set a 1.5·IQR outlier rule",
+ q_hist:"Count observations in equal-width bins. Too few bins blur the shape, too many show sampling noise. This is exactly np.histogram(x, bins=k). The purple curve is a Gaussian kernel density estimate (h = 0.28).",
+ q_miss:"Fill NaN with a column's representative value. <b>Mean</b> suits symmetric data, <b>median</b> survives skew and outliers, <b>mode</b> is for categories. Imputation shrinks variance (underestimates it) and weakens correlations — watch σ change after filling. Above ~30% missing, or when missingness is not random, prefer dropping rows or model-based imputation.",
+ q_out:"In an elongated cloud, Euclidean distance from the centre flags the ends of the cloud (normal) and misses real departures along the diagonal. Mahalanobis distance uses the covariance Σ to rotate and standardise, testing points against the ellipse. d² follows χ² with 2 df, so χ²=5.99 is the 95% contour. Drag a point and watch its verdict flip.",
+ q_corr:"How strongly two variables move together, from −1 to 1. The numerator Σ(x−x̄)(y−ȳ) grows when points sit in the upper-right and lower-left. Raise the noise and the cloud spreads as r falls toward 0; lower it and points snap to a line as r approaches 1. r² is the share of y variance explained linearly; the slope carries units, r does not.",
+ q_seas:"Split a series into trend T, season S and residual ε. In an additive model observed = T + S + ε, so removing the trend leaves the repeating pattern and removing the season leaves the residual. Period 12 is an annual cycle, 7 a weekly one. Drag the playhead to read T, S and ε at a given time.",
+ q_box:"Check dtypes first — a date stored as object breaks sorting and duration maths, and NaNs in a numeric column poison every later calculation. The box plot shows Q1, median, Q3 and the 1.5·IQR fences. Points beyond the fence are outliers by rule, not necessarily errors: inspect the context before acting.",
+ normal:"Normal", skewed:"Skewed", bimodal:"Bimodal", bins:"bins", auto:"auto",
+ boxnote1:"Box = Q₁–Q₃ (middle 50%) · whiskers = furthest values inside the fences", boxnote2:"Points beyond 1.5·IQR are outliers by rule — check the context",
+ mean:"Mean", median:"Median", mode:"Mode", remiss:"Re-miss",
+ maha:"Mahalanobis", euc:"Euclidean", thr:"threshold",
+ noise:"noise", period:"period (mo)", amp:"amplitude", skew:"skew", showOut:"outliers",
+ obs:"Observed", trend:"Trend", season:"Season", resid:"Residual", before:"obs", after:"imp",
+ outl:"outliers", norm:"normal", filled:"filled", missing:"missing",
+ m_intro:"Each of the six cards isolates one fundamental move of exploratory data analysis. Everything is computed for real and reacts instantly to sliders and drags.",
+ m_keys:"Shortcuts: Space play/pause · Esc close help. The ? on a card overlays that card's notes."
+}
+};
+
+const CARDS = [
+ {id:'hist', fx:'n = 900 · h = (max − min) / k'},
+ {id:'miss', fx:'x̂ = mean(x) · median(x) · mode(x)'},
+ {id:'out',  fx:'d² = (x − μ)<sup>T</sup> Σ<sup>−1</sup> (x − μ) ~ χ²(2)'},
+ {id:'corr', fx:'r = Σ(xᵢ−x̄)(yᵢ−ȳ) / √( Σ(xᵢ−x̄)² · Σ(yᵢ−ȳ)² )', small:true},
+ {id:'seas', fx:'yₜ = Tₜ + Sₜ + εₜ'},
+ {id:'box',  fx:'IQR = Q₃ − Q₁ · fence = Q₁ − 1.5·IQR', small:true},
+];
+
+/* ============================== 팔레트 / 도우미 ============================== */
+const C = {ink:'#111827', mute:'#6B7280', gray:'#9CA3AF', grid:'#EEF0F3', axis:'#D1D5DB',
+           A:'#2563EB', B:'#EF4444', pur:'#9331E9', purF:'rgba(147,51,234,0.13)',
+           green:'#0F766E', amber:'#D97706', pink:'#DB2777', hi:'#FEF3C7'};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+const easeOut=u=>1-Math.pow(1-u,3);
+const f2=v=>(isFinite(v)?v:0).toFixed(2);
+const pad2=n=>String(n).padStart(2,'0');
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+function gauss(rnd){let u=0,v=0;while(u===0)u=rnd();v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+function line(ctx,x1,y1,x2,y2,color,w=1,dash=null){ctx.save();ctx.strokeStyle=color;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();}
+function label(ctx,s,x,y,o={}){
+ ctx.save();ctx.font=`${o.weight||600} ${o.size||11}px ui-monospace,SFMono-Regular,Menlo,monospace`;
+ ctx.textAlign=o.align||'center';ctx.textBaseline=o.base||'middle';
+ if(o.halo!==false){ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,0.92)';ctx.lineJoin='round';ctx.strokeText(s,x,y);}
+ ctx.fillStyle=o.color||C.ink;ctx.fillText(s,x,y);ctx.restore();
+}
+function dot(ctx,x,y,r,color,o={}){
+ ctx.save();ctx.globalAlpha=o.alpha??1;
+ ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+ if(o.ring){ctx.lineWidth=o.ringW||1.6;ctx.strokeStyle=o.ring;ctx.stroke();}
+ ctx.restore();
+}
+function arrowHead(ctx,x1,y1,x2,y2,s){const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-s*Math.cos(a-0.42),y2-s*Math.sin(a-0.42));ctx.lineTo(x2-s*Math.cos(a+0.42),y2-s*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function arrow(ctx,x1,y1,x2,y2,o={}){
+ const color=o.color||C.ink,w=o.w||2,head=o.head||8,pad1=o.pad1||0,pad2=o.pad2||0;
+ let L=Math.hypot(x2-x1,y2-y1);if(L<pad1+pad2+4)return;
+ const ux=(x2-x1)/L,uy=(y2-y1)/L;
+ x1+=ux*pad1;y1+=uy*pad1;x2-=ux*pad2;y2-=uy*pad2;
+ ctx.save();ctx.strokeStyle=ctx.fillStyle=color;ctx.lineWidth=w;ctx.lineCap='round';
+ if(o.dash)ctx.setLineDash(o.dash);
+ ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+ if(!o.noHead)arrowHead(ctx,x1,y1,x2,y2,head);
+ ctx.restore();
+}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ============================== 상태 ============================== */
+let S;
+function defaults(){
+ return {
+  lang:(S&&S.lang)||'ko', playing:true,
+  hold:{hist:0,miss:0,out:0,corr:0,seas:0,box:0},
+  hist:{shape:'normal', bins:20, auto:true, cache:null, cur:null, fresh:true, grow:9, hover:-1, cyc:0},
+  miss:{method:'mean', filled:false, tm:0, auto:true, cache:null, holdAt:0},
+  out:{metric:'maha', chi:5.99, pts:[], probeT:0.6, drag:-1, hovering:-1},
+  corr:{noise:0.75, pts:[], drag:-1, auto:true, jit:0, hi:0, hiT:0},
+  seas:{period:12, amp:1.0, phase:0, dragScrub:false},
+  box:{skew:0.35, showOutliers:true, cache:null, grow:9}
+ };
+}
+const now=()=>performance.now();
+function held(id){ return now() < S.hold[id]; }
+function touch(id,ms=5000){ S.hold[id]=now()+ms; }
+
+/* ============================== 모듈 1 · 히스토그램 ============================== */
+const HIST={lo:-4, hi:4, n:900};
+const histCache={};
+function histSamples(shape){
+ if(histCache[shape]) return histCache[shape];
+ const rnd=mulberry(shape==='normal'?11:shape==='skewed'?22:33);
+ const out=[];
+ for(let i=0;i<HIST.n;i++){
+  let x;
+  if(shape==='normal') x=gauss(rnd);
+  else if(shape==='skewed') x=-2.4+2.05*(-Math.log(1-rnd()*0.999))+0.12*gauss(rnd);
+  else x=(rnd()<0.46? -1.55+0.5*gauss(rnd) : 1.55+0.62*gauss(rnd));
+  if(x>HIST.lo&&x<HIST.hi) out.push(x);
+ }
+ histCache[shape]=out; return out;
+}
+function histCounts(shape,nb){
+ const d=histSamples(shape), w=(HIST.hi-HIST.lo)/nb, c=new Array(nb).fill(0);
+ for(const v of d){ let i=Math.floor((v-HIST.lo)/w); i=clamp(i,0,nb-1); c[i]++; }
+ return c;
+}
+function histKde(shape){
+ const d=histSamples(shape), h=0.28, N=80, out=[];
+ for(let i=0;i<=N;i++){
+  const x=HIST.lo+(HIST.hi-HIST.lo)*i/N; let s=0;
+  for(const v of d){ const u=(x-v)/h; s+=Math.exp(-0.5*u*u); }
+  out.push({x, y:s/(d.length*h*Math.sqrt(2*Math.PI))});
+ }
+ return out;
+}
+function drawHist(){
+ const cv=el.hist.cv; if(!cv._w) return;
+ const ctx=clear(cv), w=cv._w, h=cv._h, L=T[S.lang];
+ const pad={l:30,r:10,t:20,b:26}, pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+ const shape=S.hist.shape, nb=S.hist.bins, key=shape+'|'+nb;
+ if(!S.hist.cache||S.hist.cache.key!==key){
+   const counts=histCounts(shape,nb);
+   S.hist.cache={key,counts,kde:histKde(shape),max:Math.max(1,...counts)};
+   if(!S.hist.cur||S.hist.cur.length!==nb){ S.hist.cur=new Array(nb).fill(0); S.hist.grow=0; S.hist.fresh=true; }
+ }
+ const cc=S.hist.cache, maxY=cc.max*1.22, g=clamp(S.hist.grow,0,6);
+ const bw=pw/nb, nbw=(HIST.hi-HIST.lo)/nb, kscale=histSamples(shape).length*nbw;
+ const cur=S.hist.cur||cc.counts;
+ // 격자·축
+ for(let k=0;k<=2;k++){
+   const y=pad.t+ph-(k/2)*ph;
+   line(ctx,pad.l,y,pad.l+pw,y,k===0?C.axis:C.grid,1);
+   label(ctx,String(Math.round(maxY*k/2)),pad.l-4,y,{size:8.5,color:C.mute,align:'right'});
+ }
+ // 막대
+ for(let i=0;i<nb;i++){
+   const bh=(cur[i]/maxY)*ph;
+   if(bh<=0.25) continue;
+   const x=pad.l+i*bw;
+   ctx.save();
+   ctx.fillStyle=(S.hist.hover===i)?C.pur:C.A;
+   ctx.globalAlpha=(S.hist.hover===i)?0.95:0.82;
+   ctx.fillRect(x+0.7,pad.t+ph-bh,Math.max(1,bw-1.4),bh);
+   ctx.restore();
+ }
+ // KDE
+ ctx.save();ctx.strokeStyle=C.pur;ctx.lineWidth=1.9;ctx.beginPath();
+ let started=false;
+ for(const q of cc.kde){
+   const X=pad.l+(q.x-HIST.lo)/(HIST.hi-HIST.lo)*pw;
+   const Y=pad.t+ph-(q.y*kscale/maxY)*ph;
+   started?ctx.lineTo(X,Y):(ctx.moveTo(X,Y),started=true);
+ }
+ ctx.stroke();ctx.restore();
+ // x축
+ line(ctx,pad.l,pad.t+ph,pad.l+pw,pad.t+ph,C.ink,1.1);
+ for(const t of [-4,-2,0,2,4]) label(ctx,String(t),pad.l+(t-HIST.lo)/8*pw,pad.t+ph+9,{size:8.5,color:C.mute});
+ // 평균·중앙값
+ const d=histSamples(shape), mean=d.reduce((a,b)=>a+b,0)/d.length;
+ const sorted=d.slice().sort((a,b)=>a-b), med=sorted[Math.floor(sorted.length/2)];
+ const pos=v=>pad.l+(v-HIST.lo)/8*pw;
+ [[mean,C.pur],[med,C.green]].forEach(([v,col])=>{
+   const X=pos(v);
+   ctx.save();ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(X,pad.t+ph+2);ctx.lineTo(X-3.4,pad.t+ph-3.5);ctx.lineTo(X+3.4,pad.t+ph-3.5);ctx.closePath();ctx.fill();ctx.restore();
+ });
+ label(ctx,`μ ${mean.toFixed(2)} · M ${med.toFixed(2)}`,w-pad.r-1,pad.t-8,{size:8.4,color:C.mute,align:'right',weight:600,halo:false});
+ // 호버 툴팁
+ if(S.hist.hover>=0&&S.hist.hover<nb){
+   const i=S.hist.hover, cnt=cc.counts[i];
+   const x=pad.l+i*bw+bw/2, bh=(cnt/maxY)*ph;
+   ctx.save();ctx.strokeStyle=C.pur;ctx.setLineDash([3,3]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,pad.t+ph);ctx.lineTo(x,pad.t+ph-bh);ctx.stroke();ctx.restore();
+   const tx=clamp(x,42,w-42);
+   label(ctx,`${cnt}`,tx,Math.max(10,pad.t+ph-bh-8),{size:9.5,color:C.pur,weight:800});
+   label(ctx,`${(HIST.lo+i*bw).toFixed(1)}~${(HIST.lo+(i+1)*bw).toFixed(1)}`,tx,pad.t+ph-bh-19,{size:8,color:C.mute,weight:500});
+ }
+}
+
+
+/* ============================== 모듈 2 · 결측값 ============================== */
+const MISS={
+ cols:[
+  {n:'pH',    fmt:2, v:[4.10,null,4.40,4.40,4.30,null,4.40]},
+  {n:'Brix',  fmt:1, v:[11.2,11.8,11.2,12.0,null,11.2,11.6]},
+  {n:'temp',  fmt:1, v:[null,63.5,62.0,63.5,63.5,62.2,63.0]},
+  {n:'yield', fmt:1, v:[88.5,87.2,88.0,null,88.0,88.5,88.0]},
+  {n:'cost',  fmt:0, v:[1200,1180,1230,1195,1210,1230,null]},
+ ]
+};
+function colStat(col,method){
+ const obs=col.v.filter(v=>v!==null);
+ const vals=obs.slice().sort((a,b)=>a-b);
+ if(method==='mean') return obs.reduce((a,b)=>a+b,0)/obs.length;
+ if(method==='median'){ const m=vals.length; return m%2? vals[(m-1)/2] : (vals[m/2-1]+vals[m/2])/2; }
+ const cnt=new Map();
+ for(const v of obs){ const k=v.toFixed(col.fmt); cnt.set(k,(cnt.get(k)||0)+1); }
+ let best=null,bk=0;
+ for(const [k,c] of cnt){ if(c>bk){bk=c;best=+k;} }
+ return best;
+}
+function missCells(){
+ const out=[];
+ MISS.cols.forEach((col,ci)=>col.v.forEach((v,ri)=>{ if(v===null) out.push({ci,ri}); }));
+ return out;
+}
+const MC=missCells();
+function missFilledValues(){
+ const out=[];
+ for(const cell of MC){
+  const col=MISS.cols[cell.ci];
+  out.push(colStat(col,S.miss.method));
+ }
+ return out;
+}
+function drawMiss(){
+ const cv=el.miss.cv; if(!cv._w) return;
+ const ctx=clear(cv), w=cv._w, h=cv._h, L=T[S.lang];
+ const padL=8, padT=6, cw=(w-padL*2)/MISS.cols.length, rh=clamp((h-padT-74)/8,20,34);
+ const y0=padT+rh; // 행 시작(헤더 다음)
+ const cells=MC, vals=missFilledValues();
+ // 헤더
+ const dtypes=['float64','float64','float64','float64','int64'];
+ for(let ci=0;ci<MISS.cols.length;ci++){
+   const x=padL+ci*cw;
+   label(ctx,MISS.cols[ci].n,x+cw/2,padT+rh*0.36,{size:9.5,color:C.ink,weight:800});
+   label(ctx,dtypes[ci],x+cw/2,padT+rh*0.78,{size:7,color:C.gray,weight:500});
+ }
+ line(ctx,padL,padT+rh,padL+cw*5,padT+rh,C.ink,1);
+ // 행 배경·값
+ for(let ri=0;ri<7;ri++){
+   const y=y0+ri*rh;
+   if(ri%2===1){ ctx.save();ctx.fillStyle='#FAFAFB';ctx.fillRect(padL,y,cw*5,rh);ctx.restore(); }
+   for(let ci=0;ci<MISS.cols.length;ci++){
+     const col=MISS.cols[ci], v=col.v[ri], x=padL+ci*cw;
+     if(v===null){
+       const idx=cells.findIndex(c=>c.ci===ci&&c.ri===ri);
+       const p=S.miss.filled? clamp((S.miss.tm-idx*0.18)/0.42,0,1) : 0;
+       const val=vals[idx];
+       if(p>0.02){
+         ctx.save();ctx.globalAlpha=Math.min(1,p*1.6);ctx.fillStyle='rgba(147,51,234,0.13)';ctx.fillRect(x+1,y+1,cw-2,rh-2);ctx.restore();
+       } else {
+         const pulse=0.16+0.10*Math.sin(now()/260+ri+ci);
+         ctx.save();ctx.globalAlpha=pulse+0.25;ctx.fillStyle='rgba(239,68,68,0.22)';ctx.fillRect(x+1,y+1,cw-2,rh-2);ctx.restore();
+       }
+       if(p<0.7){
+         const a=p>0.02?1:0.55+0.45*Math.sin(now()/260+ri*2+ci);
+         label(ctx,'NaN',x+cw/2,y+rh/2,{size:9,color:'#B91C1C',weight:800,halo:false});
+         ctx.save();ctx.globalAlpha=Math.min(1,a);ctx.restore();
+       } else {
+         const sc=1+0.35*(1-p)/0.3;
+         ctx.save();ctx.translate(x+cw/2,y+rh/2);ctx.scale(sc,sc);ctx.translate(-(x+cw/2),-(y+rh/2));
+         label(ctx,val.toFixed(col.fmt),x+cw/2,y+rh/2,{size:9.3,color:C.pur,weight:800,halo:false});
+         ctx.restore();
+       }
+       // 날아가는 점
+       if(p>0.02&&p<0.72){
+         const sx=x+cw/2, sy=h-30, tx=x+cw/2, ty=y+rh/2;
+         const u=ease(clamp(p/0.72,0,1));
+         const px=lerp(sx,tx,u), py=lerp(sy,ty,u)-Math.sin(u*Math.PI)*16;
+         dot(ctx,px,py,3.2,C.pur,{ring:'#fff',ringW:1.2});
+       }
+     } else {
+       label(ctx,v.toFixed(col.fmt),x+cw/2,y+rh/2,{size:9.3,color:'#374151',weight:500,halo:false});
+     }
+   }
+ }
+ line(ctx,padL,y0+7*rh,padL+cw*5,y0+7*rh,C.axis,1);
+ // 세로 구분
+ for(let ci=1;ci<5;ci++) line(ctx,padL+ci*cw,padT+rh,padL+ci*cw,y0+7*rh,'#F3F4F6',1);
+ // 하단: pH 열 분포 before → after
+ const tb=padT+rh*8+2;
+ const ph=MISS.cols[0], obs=ph.v.filter(v=>v!==null);
+ const mu=obs.reduce((a,b)=>a+b,0)/obs.length;
+ const sd1=Math.sqrt(obs.reduce((a,b)=>a+(b-mu)*(b-mu),0)/obs.length);
+ const fullPh=ph.v.map(v=>v===null?colStat(ph,S.miss.method):v);
+ const mu2=fullPh.reduce((a,b)=>a+b,0)/fullPh.length;
+ const sd2=Math.sqrt(fullPh.reduce((a,b)=>a+(b-mu2)*(b-mu2),0)/fullPh.length);
+ const fillVal=colStat(ph,S.miss.method);
+ const total=MC.length;
+ const cellList=MC.map((c,i)=>({ci:c.ci,ri:c.ri,i}));
+ let filledN=0;
+ if(S.miss.filled) for(const c of cellList){ if(clamp((S.miss.tm-c.i*0.18)/0.42,0,1)>0.7) filledN++; }
+ label(ctx,`pH · ${L.filled} ${filledN}/${total} · ${L[S.miss.method]}`,padL+2,tb+9,{size:8,color:C.ink,weight:700,align:'left',halo:false});
+ label(ctx,`σ ${sd1.toFixed(3)} → ${sd2.toFixed(3)}`,w-padL,tb+9,{size:8,color:C.mute,align:'right',halo:false});
+ const sx0=padL+38, sx1=w-padL-2, v0=3.92, v1=4.68;
+ const SX=v=>sx0+clamp((v-v0)/(v1-v0),0,1)*(sx1-sx0);
+ const yB=tb+21, yA=tb+35;
+ // 관측(대체 전)
+ obs.forEach((v,k)=>dot(ctx,SX(v),yB+((k%3)-1)*1.8,2.4,'#fff',{ring:C.gray,ringW:1.4}));
+ // 대체 후(7개)
+ ph.v.forEach((v,k)=>{
+   if(v!==null){ dot(ctx,SX(v),yA+((k%3)-1)*1.8,2.6,'rgba(107,114,128,0.55)'); }
+   else {
+     const c=cellList.find(c=>c.ci===0&&c.ri===k);
+     const pr=S.miss.filled? clamp((S.miss.tm-c.i*0.18)/0.42,0,1) : 0;
+     if(pr>0.4) dot(ctx,SX(fillVal),yA+((k%3)-1)*1.8,3.0,C.pur,{alpha:Math.min(1,pr),ring:'#fff',ringW:1.1});
+   }
+ });
+ line(ctx,sx0,tb+47,sx1,tb+47,C.axis,1);
+ for(const t of [4.0,4.2,4.4,4.6]){
+   line(ctx,SX(t),tb+47,SX(t),tb+50,C.axis,1);
+   label(ctx,t.toFixed(1),SX(t),tb+57,{size:7.4,color:C.mute});
+ }
+ label(ctx,L.before,sx0-5,yB,{size:7.1,color:C.gray,align:'right',halo:false});
+ label(ctx,L.after,sx0-5,yA,{size:7.1,color:C.pur,align:'right',halo:false});
+}
+
+/* ============================== 모듈 3 · 이상치 ============================== */
+function initOut(){
+ const rnd=mulberry(7), pts=[];
+ for(let i=0;i<72;i++){
+  const z1=gauss(rnd), z2=gauss(rnd);
+  const x=1.9*z1, y=0.42*x+0.78*z2;
+  pts.push({x,y});
+ }
+ S.out.pts=pts;
+}
+function outStats(){
+ const pts=S.out.pts, n=pts.length-1;
+ let mx=0,my=0;
+ for(let i=1;i<pts.length;i++){ mx+=pts[i].x; my+=pts[i].y; }
+ mx/=n; my/=n;
+ let sxx=0,syy=0,sxy=0;
+ for(let i=1;i<pts.length;i++){ const dx=pts[i].x-mx, dy=pts[i].y-my; sxx+=dx*dx; syy+=dy*dy; sxy+=dx*dy; }
+ sxx/=n; syy/=n; sxy/=n;
+ const det=Math.max(1e-8,sxx*syy-sxy*sxy);
+ const i0=syy/det, i1=-sxy/det, i3=sxx/det;
+ const tr=sxx+syy, disc=Math.max(0,tr*tr/4-det);
+ const l1=tr/2+Math.sqrt(disc), l2=tr/2-Math.sqrt(disc);
+ const ang=0.5*Math.atan2(2*sxy,sxx-syy);
+ return {mx,my,sxx,syy,sxy,i0,i1,i3,l1,l2,ang};
+}
+const maha2=(x,y,st)=>{const dx=x-st.mx,dy=y-st.my;return dx*st.i0*dx+2*dx*st.i1*dy+dy*st.i3*dy;};
+function drawOut(){
+ const cv=el.out.cv; if(!cv._w) return;
+ const ctx=clear(cv), w=cv._w, h=cv._h, L=T[S.lang], st=outStats();
+ const pad={l:26,r:10,t:14,b:22};
+ const XR=7.2, YR=5.2;
+ const sc=Math.min((w-pad.l-pad.r)/(2*XR),(h-pad.t-pad.b)/(2*YR));
+ const cx=pad.l+(w-pad.l-pad.r)/2, cy=pad.t+(h-pad.t-pad.b)/2;
+ const X=v=>cx+v*sc, Y=v=>cy-v*sc;
+ // 격자·축
+ for(let i=-3;i<=3;i++){
+   line(ctx,X(i),pad.t,X(i),h-pad.b,i===0?C.axis:C.grid,1);
+   line(ctx,pad.l,Y(i),w-pad.r,Y(i),i===0?C.axis:C.grid,1);
+ }
+ label(ctx,'x',w-pad.r-2,h-pad.b-8,{size:9,color:C.mute,align:'right'});
+ label(ctx,'y',12,pad.t+11,{size:9,color:C.mute,halo:false});
+ // 공분산 타원
+ const chi=S.out.chi;
+ const drawEllipse=(mult,style)=>{
+   ctx.save();ctx.translate(X(st.mx),Y(st.my));ctx.rotate(-st.ang);
+   ctx.beginPath();ctx.ellipse(0,0,Math.sqrt(st.l1*mult)*sc,Math.sqrt(st.l2*mult)*sc,0,0,Math.PI*2);
+   if(style.fill){ctx.fillStyle=style.fill;ctx.fill();}
+   ctx.strokeStyle=style.color;ctx.lineWidth=style.w||1;if(style.dash)ctx.setLineDash(style.dash);
+   ctx.stroke();ctx.restore();
+ };
+ if(S.out.metric==='maha'){
+   drawEllipse(1,{color:'rgba(147,51,234,0.35)',w:1,dash:[3,3]});
+   drawEllipse(2.3,{color:'rgba(147,51,234,0.25)',w:1,dash:[2,4]});
+   drawEllipse(chi,{fill:C.purF,color:C.pur,w:2});
+ } else {
+   drawEllipse(chi,{color:'rgba(147,51,234,0.18)',w:1,dash:[3,3]});
+   ctx.save();ctx.beginPath();ctx.arc(X(st.mx),Y(st.my),Math.sqrt(chi)*sc,0,Math.PI*2);
+   ctx.strokeStyle=C.A;ctx.lineWidth=2;ctx.stroke();
+   ctx.fillStyle='rgba(37,99,235,0.06)';ctx.fill();ctx.restore();
+ }
+ // 점
+ const pts=S.out.pts, t=now()/1000;
+ let nOut=0, nEuc=0;
+ for(let i=1;i<pts.length;i++){
+   const p=pts[i];
+   const d2=maha2(p.x,p.y,st), isOut=d2>chi;
+   const de=Math.hypot(p.x-st.mx,p.y-st.my), isEuc=de>Math.sqrt(chi);
+   if(isOut)nOut++;
+   if(isEuc)nEuc++;
+   const flagged = S.out.metric==='maha'? isOut : isEuc;
+   if(flagged){
+     const pulse=0.55+0.45*Math.sin(t*3.4+i);
+     dot(ctx,X(p.x),Y(p.y),4.6,C.B,{ring:`rgba(239,68,68,${0.35+0.3*pulse})`,ringW:2.4});
+   } else {
+     dot(ctx,X(p.x),Y(p.y),3.6,'rgba(107,114,128,0.55)');
+   }
+ }
+ // 중심 표시
+ ctx.save();ctx.strokeStyle='rgba(17,24,39,0.55)';ctx.lineWidth=1.2;
+ ctx.beginPath();ctx.moveTo(X(st.mx)-5,Y(st.my));ctx.lineTo(X(st.mx)+5,Y(st.my));
+ ctx.moveTo(X(st.mx),Y(st.my)-5);ctx.lineTo(X(st.mx),Y(st.my)+5);ctx.stroke();ctx.restore();
+ label(ctx,'μ',X(st.mx)+10,Y(st.my)-8,{size:8.5,color:C.mute,align:'left',weight:600});
+ // 프로브
+ const pr=pts[0];
+ const pd2=maha2(pr.x,pr.y,st), pDe=Math.hypot(pr.x-st.mx,pr.y-st.my);
+ line(ctx,X(st.mx),Y(st.my),X(pr.x),Y(pr.y),'rgba(17,24,39,0.35)',1.2,[4,3]);
+ dot(ctx,X(pr.x),Y(pr.y),6,C.ink,{ring:'#fff',ringW:2});
+ label(ctx,'probe',X(pr.x),Y(pr.y)-13,{size:8.5,color:C.ink,weight:800});
+ const flagM=pd2>chi, flagE=pDe>Math.sqrt(chi);
+ const cur=S.out.metric==='maha'?flagM:flagE;
+ label(ctx,cur?L.outl:L.norm,X(pr.x),Y(pr.y)+14,{size:8.5,color:cur?C.B:C.green,weight:800});
+ // 범례·수치
+ label(ctx,`${L.outl} ${S.out.metric==='maha'?nOut:nEuc} / ${pts.length-1}`,pad.l+2,h-pad.b-8,{size:9.5,color:C.B,weight:800,align:'left'});
+ label(ctx,`χ²=${chi.toFixed(2)} · p=${(100*(1-Math.exp(-chi/2))).toFixed(0)}%`,w-pad.r-2,pad.t+8,{size:8.8,color:C.pur,weight:700,align:'right'});
+}
+
+/* ============================== 모듈 4 · 피어슨 r ============================== */
+function initCorr(){
+ const rnd=mulberry(19), pts=[];
+ for(let i=0;i<44;i++){
+  const x=clamp(gauss(rnd)*1.0,-2.85,2.85);
+  pts.push({x, z:gauss(rnd), ph:rnd()*Math.PI*2});
+ }
+ S.corr.pts=pts;
+ corrY();
+}
+function corrY(){
+ const n=S.corr.noise, j=S.corr.jit;
+ for(const p of S.corr.pts){
+  const raw=0.9*p.x + n*1.15*p.z + 0.05*Math.sin(j*1.3+p.ph);
+  p.y=2.95*Math.tanh(raw/2.95);
+ }
+}
+function corrStats(){
+ const p=S.corr.pts, n=p.length;
+ let mx=0,my=0; for(const q of p){mx+=q.x;my+=q.y;} mx/=n;my/=n;
+ let sxx=0,syy=0,sxy=0;
+ for(const q of p){const dx=q.x-mx,dy=q.y-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy;}
+ const r=sxy/Math.sqrt(Math.max(1e-9,sxx*syy));
+ return {mx,my,sxx,syy,sxy,r,slope:sxy/Math.max(1e-9,sxx),inter:my-(sxy/Math.max(1e-9,sxx))*mx};
+}
+function drawCorr(){
+ const cv=el.corr.cv; if(!cv._w) return;
+ const ctx=clear(cv), w=cv._w, h=cv._h, L=T[S.lang], st=corrStats();
+ const pad={l:24,r:12,t:30,b:20}, R=3.1;
+ const pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+ const sc=Math.min(pw/(2*R),ph/(2*R));
+ const cx=pad.l+pw/2, cy=pad.t+ph/2;
+ const X=v=>cx+v*sc, Y=v=>cy-v*sc;
+ // 게이지
+ const gx0=pad.l+2, gx1=w-pad.r-2, gy=12, gw=gx1-gx0;
+ ctx.save();ctx.fillStyle='#F3F4F6';rrect(ctx,gx0,gy-3,gw,6,3);ctx.fill();
+ ctx.fillStyle='rgba(37,99,235,0.75)';rrect(ctx,gx0,gy-3,gw*((st.r+1)/2),6,3);ctx.fill();
+ ctx.restore();
+ line(ctx,gx0+gw/2,gy-6,gx0+gw/2,gy+6,C.axis,1);
+ const gX=gx0+gw*((st.r+1)/2);
+ ctx.save();ctx.fillStyle=C.pur;ctx.beginPath();ctx.moveTo(gX,gy-7);ctx.lineTo(gX-4,gy-13);ctx.lineTo(gX+4,gy-13);ctx.closePath();ctx.fill();ctx.restore();
+ label(ctx,'−1',gx0+1,gy+11,{size:8,color:C.mute,align:'left'}); label(ctx,'0',gx0+gw/2,gy+11,{size:8,color:C.mute}); label(ctx,'+1',gx1-1,gy+11,{size:8,color:C.mute,align:'right'});
+ // 격자·평균선
+ line(ctx,pad.l,Y(0),w-pad.r,Y(0),C.grid,1);
+ line(ctx,X(0),pad.t,X(0),h-pad.b,C.grid,1);
+ line(ctx,pad.l,Y(st.my),w-pad.r,Y(st.my),'rgba(17,24,39,0.28)',1,[5,4]);
+ line(ctx,X(st.mx),pad.t,X(st.mx),h-pad.b,'rgba(17,24,39,0.28)',1,[5,4]);
+ label(ctx,'x̄',X(st.mx)+8,h-pad.b-6,{size:8.5,color:C.mute});
+ label(ctx,'ȳ',w-pad.r-4,Y(st.my)-7,{size:8.5,color:C.mute,align:'right'});
+ // 회귀선
+ const xA=-3, xB=3;
+ line(ctx,X(xA),Y(st.inter+st.slope*xA),X(xB),Y(st.inter+st.slope*xB),C.B,2.2);
+ // 편차 안내선 (드래그 중인 점 강조)
+ const hiIdx=S.corr.drag>=0? S.corr.drag : S.corr.hi;
+ for(let i=0;i<S.corr.pts.length;i++){
+   const p=S.corr.pts[i];
+   const active=(i===hiIdx);
+   if(active){
+     ctx.save();ctx.fillStyle='rgba(147,51,234,0.16)';
+     ctx.fillRect(Math.min(X(p.x),X(st.mx)),Math.min(Y(p.y),Y(st.my)),Math.abs(X(p.x)-X(st.mx)),Math.abs(Y(p.y)-Y(st.my)));
+     ctx.restore();
+     line(ctx,X(p.x),Y(p.y),X(p.x),Y(st.my),C.pur,1.1,[3,3]);
+     line(ctx,X(p.x),Y(p.y),X(st.mx),Y(p.y),C.pur,1.1,[3,3]);
+   }
+   dot(ctx,X(p.x),Y(p.y),active?5.4:4.1,active?C.pur:(p.y-st.my>0?C.A:'#60A5FA'),{ring:active?'#fff':null,ringW:1.6});
+ }
+}
+
+/* ============================== 모듈 5 · 계절성 ============================== */
+const SEAS={n:96};
+function initSeas(){
+ const rnd=mulberry(31), raw=[]; let v=0;
+ for(let i=0;i<SEAS.n;i++){ v=v*0.7+(rnd()*2-1)*0.8; raw.push(v); }
+ const m=raw.reduce((a,b)=>a+b,0)/raw.length;
+ const sd=Math.sqrt(raw.reduce((a,b)=>a+(b-m)*(b-m),0)/raw.length)||1;
+ SEAS.noise=raw.map(x=>(x-m)/sd);
+}
+function seasParts(){
+ const p=S.seas.period, a=S.seas.amp, out=[];
+ for(let i=0;i<SEAS.n;i++){
+  const t=2.4+0.021*i+0.42*Math.sin(i*0.07);
+  const s=a*Math.sin(2*Math.PI*i/p+0.6);
+  const e=0.30*SEAS.noise[i];
+  out.push({t3:t, s, e, o:t+s+e});
+ }
+ return out;
+}
+function drawSeas(){
+ const cv=el.seas.cv; if(!cv._w) return;
+ const ctx=clear(cv), w=cv._w, h=cv._h, L=T[S.lang];
+ const pad={l:26,r:44,t:8,b:12};
+ const parts=seasParts(), n=parts.length;
+ const pw=w-pad.l-pad.r, laneH=(h-pad.t-pad.b)/4;
+ const X=i=>pad.l+(i/(n-1))*pw;
+ const keys=['o','t3','s','e'], names=[L.obs,L.trend,L.season,L.resid];
+ const cols=[C.A,C.B,C.green,C.mute];
+ const ranges=keys.map(k=>{
+   let lo=Infinity,hi=-Infinity;
+   for(const q of parts){ lo=Math.min(lo,q[k]); hi=Math.max(hi,q[k]); }
+   if(hi-lo<1e-6){hi=lo+1;}
+   return [lo,hi];
+ });
+ const playIdx=clamp(Math.round(S.seas.phase*(n-1)),0,n-1);
+ keys.forEach((k,li)=>{
+   const top=pad.t+li*laneH, mid=top+laneH*0.58;
+   const [lo,hi]=ranges[li];
+   const amp=(laneH*0.62)/(hi-lo);
+   const Yv=v=>mid-(v-(lo+hi)/2)*amp;
+   // 레인 경계
+   line(ctx,pad.l,top,w-pad.r,top,'#F3F4F6',1);
+   label(ctx,names[li],pad.l+1,top+7,{size:9,color:cols[li],weight:800,align:'left'});
+   // 기준선(추세는 평균, 나머지는 0)
+   const base=li===1? (lo+hi)/2 : (k==='s'||k==='e'?0:(lo+hi)/2);
+   if(k==='s'||k==='e') line(ctx,pad.l,Yv(0),w-pad.r,Yv(0),'#E5E7EB',1);
+   // 곡선(전체 흐림 + 재생된 부분 진하게)
+   ctx.save();ctx.strokeStyle=cols[li];ctx.lineWidth=1.2;ctx.globalAlpha=0.18;ctx.beginPath();
+   for(let i=0;i<n;i++){ const x=X(i),y=Yv(parts[i][k]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+   ctx.stroke();ctx.restore();
+   ctx.save();ctx.strokeStyle=cols[li];ctx.lineWidth=2;ctx.beginPath();
+   for(let i=0;i<=playIdx;i++){ const x=X(i),y=Yv(parts[i][k]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+   ctx.stroke();ctx.restore();
+   // 재생 헤드 점·값
+   const i=playIdx, x=X(i), y=Yv(parts[i][k]);
+   dot(ctx,x,y,3.4,cols[li],{ring:'#fff',ringW:1.4});
+   label(ctx,parts[i][k].toFixed(1),w-pad.r+4,y,{size:8.6,color:cols[li],weight:700,align:'left'});
+ });
+ // 재생 헤드 수직선
+ line(ctx,X(playIdx),pad.t-2,X(playIdx),h-pad.b+2,'rgba(17,24,39,0.35)',1,[2,3]);
+ label(ctx,`t=${playIdx}`,X(playIdx),h-pad.b+5,{size:8,color:C.mute});
+}
+
+/* ============================== 모듈 6 · 열 유형 · 상자그림 ============================== */
+const DTYPES=[
+ {n:'price', t:'float64', kind:'num', ok:true},
+ {n:'qty', t:'int64', kind:'num', ok:true},
+ {n:'rating', t:'float64', kind:'num', ok:false, note:'18% NaN'},
+ {n:'segment', t:'object', kind:'cat', ok:true},
+ {n:'order_date', t:'object', kind:'date', ok:false, note:'parse'},
+];
+function boxData(skew){
+ const rnd=mulberry(53), arr=[];
+ for(let i=0;i<180;i++){
+   const z=gauss(rnd);
+   const v=clamp(z*(1+0.14*Math.max(0,skew))+skew*0.55*(z*z-1),-5,5);
+   arr.push(v);
+ }
+ arr.sort((a,b)=>a-b);
+ const q=p=>{
+   const pos=(arr.length-1)*p, lo=Math.floor(pos), hi=Math.ceil(pos);
+   return arr[lo]+(arr[hi]-arr[lo])*(pos-lo);
+ };
+ const q1=q(0.25), med=q(0.5), q3=q(0.75), iqr=q3-q1;
+ const loF=q1-1.5*iqr, hiF=q3+1.5*iqr;
+ const ins=arr.filter(v=>v>=loF&&v<=hiF), outs=arr.filter(v=>v<loF||v>hiF);
+ return {arr,q1,med,q3,iqr,loF,hiF,wLo:Math.min(...ins),wHi:Math.max(...ins),outs};
+}
+function drawBox(){
+ const cv=el.box.cv; if(!cv._w) return;
+ const ctx=clear(cv), w=cv._w, h=cv._h, L=T[S.lang];
+ // dtype 카드
+ const n=DTYPES.length, gap=4, cw=(w-12-gap*(n-1))/n, cy=5, chh=38;
+ DTYPES.forEach((d,i)=>{
+   const x=6+i*(cw+gap);
+   ctx.save();
+   ctx.fillStyle=d.ok?'#fff':'#FFFBEB';
+   rrect(ctx,x,cy,cw,chh,4);ctx.fill();
+   ctx.strokeStyle=d.ok?'#D1D5DB':C.amber;ctx.lineWidth=1;ctx.stroke();
+   ctx.restore();
+   label(ctx,d.n,x+5,cy+11,{size:8.2,color:C.ink,weight:800,align:'left',halo:false});
+   const tc=d.kind==='num'? C.A : d.kind==='cat'? C.pur : C.green;
+   ctx.save();ctx.fillStyle=tc+'22';rrect(ctx,x+4,cy+17,Math.min(cw-8,42),11,3);ctx.fill();
+   ctx.restore();
+   label(ctx,d.t,x+7,cy+23,{size:7.4,color:tc,weight:700,align:'left',halo:false});
+   dot(ctx,x+cw-4,cy+7,2.6,d.ok?C.green:C.amber);
+   if(d.note) label(ctx,d.note,x+4,cy+33,{size:7.2,color:d.ok?C.mute:C.amber,weight:700,align:'left',halo:false});
+ });
+ // 상자그림
+ const pad={l:16,r:16,t:52,b:24};
+ const key='s'+S.box.skew.toFixed(2);
+ if(!S.box.cache||S.box.cache.key!==key){ S.box.cache={key,data:boxData(S.box.skew)}; S.box.grow=0; }
+ const d=S.box.cache.data;
+ const pw=w-pad.l-pad.r;
+ const lo=Math.min(d.wLo,d.outs.length?Math.min(...d.outs):d.wLo)-0.35;
+ const hi=Math.max(d.wHi,d.outs.length?Math.max(...d.outs):d.wHi)+0.35;
+ const axLo=Math.floor(lo), axHi=Math.ceil(hi);
+ const X=v=>pad.l+(v-axLo)/(axHi-axLo)*pw;
+ const axisY=h-80, boxY=pad.t+(axisY-pad.t)*0.58, bh=30;
+ const k=easeOut(clamp(S.box.grow/0.9,0,1));
+ // 분포 스트립(같은 x축)
+ const nb=46, bins=new Array(nb).fill(0), bw=(axHi-axLo)/nb;
+ for(const v of d.arr){ const i=clamp(Math.floor((v-axLo)/bw),0,nb-1); bins[i]++; }
+ const bmax=Math.max(...bins), stripBot=boxY-bh/2-16;
+ const stripH=Math.max(14,Math.min(42,stripBot-pad.t-20));
+ for(let i=0;i<nb;i++){
+   const bh2=(bins[i]/bmax)*stripH*ease(clamp(S.box.grow/0.8,0,1));
+   if(bh2<0.3) continue;
+   ctx.save();ctx.fillStyle='rgba(37,99,235,0.20)';
+   ctx.fillRect(pad.l+i*bw/(axHi-axLo)*pw+0.4,stripBot-bh2,Math.max(1,bw/(axHi-axLo)*pw-0.8),bh2);
+   ctx.restore();
+ }
+ label(ctx,'distribution',pad.l+1,stripBot-stripH-7,{size:7.2,color:C.gray,weight:600,align:'left',halo:false});
+ // 울타리
+ [d.loF,d.hiF].forEach((f,i)=>{
+   if(f<axLo-0.2||f>axHi+0.2) return;
+   line(ctx,X(f),stripBot-stripH-2,X(f),axisY,'rgba(217,119,6,0.4)',1,[3,3]);
+   label(ctx,'1.5·IQR',X(f)+(i?-4:4),stripBot-stripH-2,{size:7,color:'rgba(180,100,10,0.92)',weight:600,align:i?'right':'left'});
+ });
+ // 축
+ line(ctx,pad.l,axisY,w-pad.r,axisY,C.axis,1);
+ const step=Math.max(1,Math.ceil((axHi-axLo)/9));
+ for(let v=axLo;v<=axHi;v+=step){
+   line(ctx,X(v),axisY,X(v),axisY+4,C.axis,1);
+   label(ctx,String(v),X(v),axisY+11,{size:8,color:C.mute});
+ }
+ // 수염
+ const lw=lerp(d.med,d.wLo,k), rw=lerp(d.med,d.wHi,k);
+ line(ctx,X(lw),boxY,X(d.med),boxY,C.ink,1.5);
+ line(ctx,X(d.med),boxY,X(rw),boxY,C.ink,1.5);
+ [lw,rw].forEach(v=>line(ctx,X(v),boxY-8,X(v),boxY+8,C.ink,1.5));
+ // 상자
+ const x1=lerp(X(d.med),X(d.q1),k), x2=lerp(X(d.med),X(d.q3),k);
+ ctx.save();ctx.fillStyle='rgba(37,99,235,0.15)';ctx.fillRect(x1,boxY-bh/2,x2-x1,bh);
+ ctx.strokeStyle=C.A;ctx.lineWidth=1.8;ctx.strokeRect(x1,boxY-bh/2,x2-x1,bh);ctx.restore();
+ // 중앙값
+ line(ctx,X(d.med),boxY-bh/2,X(d.med),boxY+bh/2,C.B,2.4);
+ // 사분위 라벨
+ if(k>0.7){
+   [[d.q1,'Q₁',C.A,12],[d.q3,'Q₃',C.A,12],[d.med,'M',C.B,24]].forEach(([v,sname,c,dy])=>{
+     const yy=boxY+bh/2+dy;
+     line(ctx,X(v),boxY+bh/2,X(v),yy-5,c,0.7,[2,2]);
+     label(ctx,`${sname} ${v.toFixed(2)}`,X(v),yy,{size:7.8,color:c,weight:700});
+   });
+ }
+ // 이상치
+ if(S.box.showOutliers&&k>0.6){
+   const t=now()/700;
+   d.outs.forEach((v,i)=>{
+     if(v<axLo||v>axHi) return;
+     dot(ctx,X(v),boxY,3.4,C.B,{alpha:0.55+0.45*Math.sin(t+i),ring:'rgba(239,68,68,0.35)',ringW:1.7});
+   });
+ }
+ // 해설
+ label(ctx,L.boxnote1,pad.l,axisY+34,{size:7.8,color:C.mute,align:'left',weight:500});
+ label(ctx,L.boxnote2,pad.l,axisY+47,{size:7.8,color:C.mute,align:'left',weight:500});
+}
+
+/* ============================== DOM / 레이아웃 ============================== */
+const CTRL={
+ hist:`<div class="seg" id="hist-shape">
+   <button data-s="normal" data-k="normal" class="on"></button>
+   <button data-s="skewed" data-k="skewed"></button>
+   <button data-s="bimodal" data-k="bimodal"></button>
+ </div>
+ <div class="pbox"><span class="lb" data-k="bins"></span><input id="hist-bins" type="range" min="6" max="40" step="1" value="20" aria-label="bins"><span class="pval" id="hist-binsv">20</span></div>
+ <label class="chk"><input type="checkbox" id="hist-auto" checked><span data-k="auto"></span></label>`,
+ miss:`<div class="seg" id="miss-m">
+   <button data-m="mean" data-k="mean" class="on"></button>
+   <button data-m="median" data-k="median"></button>
+   <button data-m="mode" data-k="mode"></button>
+ </div>
+ <button id="miss-reset" data-k="remiss"></button>
+ <label class="chk"><input type="checkbox" id="miss-auto" checked><span data-k="auto"></span></label>`,
+ out:`<div class="seg" id="out-m">
+   <button data-m="maha" data-k="maha" class="on"></button>
+   <button data-m="euc" data-k="euc"></button>
+ </div>
+ <div class="pbox"><span class="lb" data-k="thr"></span><input id="out-chi" type="range" min="1" max="12" step="0.01" value="5.99" aria-label="threshold"><span class="pval" id="out-chiv">5.99</span></div>`,
+ corr:`<div class="pbox"><span class="lb" data-k="noise"></span><input id="corr-noise" type="range" min="0" max="1.5" step="0.01" value="0.75" aria-label="noise"><span class="pval" id="corr-noisev">0.75</span></div>
+ <label class="chk"><input type="checkbox" id="corr-auto" checked><span data-k="auto"></span></label>`,
+ seas:`<div class="pbox"><span class="lb" data-k="period"></span><input id="seas-p" type="range" min="4" max="24" step="1" value="12" aria-label="period"><span class="pval" id="seas-pv">12</span></div>
+ <div class="pbox"><span class="lb" data-k="amp"></span><input id="seas-a" type="range" min="0" max="2" step="0.05" value="1" aria-label="amplitude"><span class="pval" id="seas-av">1.0</span></div>`,
+ box:`<div class="pbox"><span class="lb" data-k="skew"></span><input id="box-skew" type="range" min="-0.8" max="0.8" step="0.05" value="0.35" aria-label="skew"><span class="pval" id="box-skewv">0.35</span></div>
+ <label class="chk"><input type="checkbox" id="box-out" checked><span data-k="showOut"></span></label>`,
+};
+const grid=document.getElementById('grid'), el={};
+CARDS.forEach((c,i)=>{
+ const d=document.createElement('section');
+ d.className='card'; d.id='card-'+c.id;
+ d.innerHTML=`
+  <div class="hd"><span class="num">${pad2(i+1)}</span><span class="ttl"></span><button class="rep" aria-label="replay">↻</button><button class="q" aria-label="help">?</button></div>
+  <div class="fx${c.small?' small':''}">${c.fx}</div>
+  <canvas role="img"></canvas>
+  <div class="ctl">${CTRL[c.id]}</div>
+  <div class="ft"><span class="val"></span><span class="sub"></span></div>
+  <div class="use"></div>
+  <div class="tip"></div>`;
+ grid.appendChild(d);
+ el[c.id]={card:d, cv:d.querySelector('canvas'), val:d.querySelector('.val'), sub:d.querySelector('.sub'),
+           ttl:d.querySelector('.ttl'), use:d.querySelector('.use'), tip:d.querySelector('.tip')};
+ d.querySelector('.q').addEventListener('click',e=>{
+   e.stopPropagation();
+   document.querySelectorAll('.card.showtip').forEach(x=>{ if(x!==d) x.classList.remove('showtip'); });
+   d.classList.toggle('showtip');
+ });
+ el[c.id].tip.addEventListener('click',()=>d.classList.remove('showtip'));
+ d.querySelector('.rep').addEventListener('click',e=>{ e.stopPropagation(); replay(c.id); });
+});
+document.addEventListener('click',()=>document.querySelectorAll('.card.showtip').forEach(x=>x.classList.remove('showtip')));
+
+function applyLang(){
+ const L=T[S.lang];
+ document.documentElement.lang=S.lang;
+ document.querySelectorAll('[data-k]').forEach(n=>{ const k=n.dataset.k; if(L[k]!==undefined) n.textContent=L[k]; });
+ CARDS.forEach(c=>{
+   const [a,b]=L['t_'+c.id];
+   el[c.id].ttl.innerHTML=a+(b?`<small>${b}</small>`:'');
+   el[c.id].cv.setAttribute('aria-label',a+(b?` — ${b}`:'')+': '+(S.lang==='ko'?'인터랙티브 차트':'interactive chart'));
+   el[c.id].use.innerHTML=L['u_'+c.id];
+   el[c.id].tip.innerHTML=L['q_'+c.id];
+ });
+ document.getElementById('lang').textContent = S.lang==='ko'?'English':'한국어';
+ document.getElementById('play').textContent = S.playing? L.play : L.paused;
+ document.getElementById('play').classList.toggle('on',S.playing);
+ last={};
+}
+
+/* ============================== 캔버스 ============================== */
+const DPR=()=>Math.min(window.devicePixelRatio||1,2.5);
+function fit(cv){
+ const r=cv.getBoundingClientRect(); if(!r.width) return;
+ const dpr=DPR();
+ cv._w=r.width; cv._h=r.height;
+ cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr);
+ const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); cv._ctx=ctx;
+}
+const ro=new ResizeObserver(es=>es.forEach(e=>fit(e.target)));
+Object.values(el).forEach(o=>{ fit(o.cv); ro.observe(o.cv); });
+function clear(cv){ const c=cv._ctx; c.clearRect(0,0,cv._w,cv._h); return c; }
+
+/* ============================== 애니메이션 업데이트 ============================== */
+function update(dt){
+ // 1 hist
+ S.hist.grow+=dt;
+ if(S.hist.cache&&S.hist.cur){
+   const cnt=S.hist.cache.counts, kk=1-Math.exp(-dt*7);
+   for(let i=0;i<cnt.length;i++){
+     const stage=S.hist.fresh? ease(clamp((S.hist.grow-i*0.012)/0.44,0,1)) : 1;
+     S.hist.cur[i]=lerp(S.hist.cur[i], cnt[i]*stage, kk);
+   }
+   if(S.hist.grow>1.6) S.hist.fresh=false;
+ }
+ if(S.playing && S.hist.auto && !held('hist')){
+   S.hist.cyc+=dt;
+   if(S.hist.cyc>4.2){ S.hist.cyc=0; const order=['normal','skewed','bimodal']; S.hist.shape=order[(order.indexOf(S.hist.shape)+1)%3]; }
+ }
+ // 2 miss
+ if(S.playing && S.miss.auto && !held('miss')){
+   if(!S.miss.filled){ if(S.miss.tm>0.6){ S.miss.filled=true; S.miss.tm=0; } }
+   else { if(S.miss.tm>3.6){ const order=['mean','median','mode']; S.miss.method=order[(order.indexOf(S.miss.method)+1)%3]; S.miss.tm=0; } }
+ } 
+ if(S.miss.filled) S.miss.tm+=dt;
+ // 3 out: probe orbit
+ if(S.playing && S.out.drag<0 && !held('out')){
+   S.out.probeT+=dt*0.5;
+   const p=S.out.pts[0]; if(p){ p.x=4.5*Math.cos(S.out.probeT); p.y=3.1*Math.sin(S.out.probeT*1.02); }
+ }
+ // 4 corr
+ S.corr.jit+=dt;
+ if(S.playing && S.corr.drag<0){
+   S.corr.hiT+=dt;
+   if(S.corr.hiT>1.5&&S.corr.pts.length){ S.corr.hiT=0; S.corr.hi=(S.corr.hi+1)%S.corr.pts.length; }
+ }
+ if(S.playing && S.corr.auto && !held('corr')){
+   const tgt=0.35+0.55*(0.5+0.5*Math.sin(S.corr.jit*0.35));
+   S.corr.noise=lerp(S.corr.noise,tgt,1-Math.exp(-dt*2));
+   const sl=document.getElementById('corr-noise'); if(document.activeElement!==sl) sl.value=S.corr.noise;
+ }
+ if(S.playing||true) corrY();
+ // 5 seas
+ if(S.playing && !S.seas.dragScrub) S.seas.phase=(S.seas.phase+dt/7)%1;
+ // 6 box
+ S.box.grow+=dt;
+}
+
+/* ============================== 수치 표시 ============================== */
+let last={};
+function setTxt(node,key,html){ if(last[key]!==html){ node.innerHTML=html; last[key]=html; } }
+function numbers(){
+ const L=T[S.lang];
+ // hist
+ {
+  const d=histSamples(S.hist.shape), m=d.reduce((a,b)=>a+b,0)/d.length;
+  const sd=Math.sqrt(d.reduce((a,b)=>a+(b-m)*(b-m),0)/d.length);
+  const sk=d.reduce((a,b)=>a+Math.pow((b-m)/sd,3),0)/d.length;
+  setTxt(el.hist.val,'hv',`μ = ${f2(m)}`);
+  setTxt(el.hist.sub,'hs',`σ = ${f2(sd)} · 왜도 ${f2(sk)}<br>n = ${d.length} · k = ${S.hist.bins}`);
+  const bv=document.getElementById('hist-binsv'); if(bv.textContent!==String(S.hist.bins)) bv.textContent=S.hist.bins;
+  document.getElementById('hist-auto').checked=S.hist.auto;
+  document.querySelectorAll('#hist-shape button').forEach(b=>b.classList.toggle('on',b.dataset.s===S.hist.shape));
+ }
+ // miss
+ {
+  const total=MC.length;
+  const filledN=S.miss.filled? MC.filter((c,i)=>clamp((S.miss.tm-i*0.18)/0.42,0,1)>0.7).length:0;
+  setTxt(el.miss.val,'mv',`${filledN}/${total}`);
+  const ph=MISS.cols[0], obs=ph.v.filter(v=>v!==null), mu=obs.reduce((a,b)=>a+b,0)/obs.length;
+  const sd1=Math.sqrt(obs.reduce((a,b)=>a+(b-mu)*(b-mu),0)/obs.length);
+  const full=ph.v.map(v=>v===null?colStat(ph,S.miss.method):v);
+  const mu2=full.reduce((a,b)=>a+b,0)/full.length;
+  const sd2=Math.sqrt(full.reduce((a,b)=>a+(b-mu2)*(b-mu2),0)/full.length);
+  setTxt(el.miss.sub,'ms',`${L.missing} ${total} · pH σ ${sd1.toFixed(2)}→${sd2.toFixed(2)}`);
+  document.querySelectorAll('#miss-m button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.miss.method));
+  document.getElementById('miss-auto').checked=S.miss.auto;
+ }
+ // out
+ {
+  const st=outStats(), pts=S.out.pts, chi=S.out.chi;
+  let nOut=0,nEuc=0;
+  for(let i=1;i<pts.length;i++){
+    if(maha2(pts[i].x,pts[i].y,st)>chi)nOut++;
+    if(Math.hypot(pts[i].x-st.mx,pts[i].y-st.my)>Math.sqrt(chi))nEuc++;
+  }
+  const p=pts[0], d2=maha2(p.x,p.y,st), de=Math.hypot(p.x-st.mx,p.y-st.my);
+  setTxt(el.out.val,'ov',`${L.outl} ${S.out.metric==='maha'?nOut:nEuc}`);
+  setTxt(el.out.sub,'os',`probe d²=${d2.toFixed(1)} · 유클리드 ${de.toFixed(1)}<br>판정 ${((S.out.metric==='maha'?d2>chi:de>Math.sqrt(chi))?L.outl:L.norm)} · n=${pts.length-1}`);
+  const cvv=document.getElementById('out-chiv'); const txt=chi.toFixed(2); if(cvv.textContent!==txt) cvv.textContent=txt;
+  const sl=document.getElementById('out-chi'); if(document.activeElement!==sl) sl.value=chi;
+  document.querySelectorAll('#out-m button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.out.metric));
+ }
+ // corr
+ {
+  const st=corrStats();
+  setTxt(el.corr.val,'cv',`r = ${st.r.toFixed(2)}`);
+  setTxt(el.corr.sub,'cs',`r² = ${(st.r*st.r).toFixed(2)} · slope ${st.slope.toFixed(2)}<br>n = ${S.corr.pts.length} · ${L.noise} ${S.corr.noise.toFixed(2)}`);
+  const v=document.getElementById('corr-noisev'); const txt=S.corr.noise.toFixed(2); if(v.textContent!==txt) v.textContent=txt;
+  const sl=document.getElementById('corr-noise'); if(document.activeElement!==sl) sl.value=S.corr.noise;
+  document.getElementById('corr-auto').checked=S.corr.auto;
+ }
+ // seas
+ {
+  const parts=seasParts(), i=clamp(Math.round(S.seas.phase*(parts.length-1)),0,parts.length-1), q=parts[i];
+  setTxt(el.seas.val,'sv',`${L.period.split('(')[0]} ${S.seas.period}`);
+  setTxt(el.seas.sub,'ss',`T ${q.t3.toFixed(1)}+S ${q.s.toFixed(1)}+ε ${q.e.toFixed(1)}<br>= O ${q.o.toFixed(1)} · t=${i}`);
+  const pv=document.getElementById('seas-pv'); if(pv.textContent!==String(S.seas.period)) pv.textContent=S.seas.period;
+  const av=document.getElementById('seas-av'); const at=S.seas.amp.toFixed(2).replace(/0$/,''); if(av.textContent!==at) av.textContent=at;
+ }
+ // box
+ {
+  const d=S.box.cache? S.box.cache.data : boxData(S.box.skew);
+  setTxt(el.box.val,'bv',`IQR = ${d.iqr.toFixed(2)}`);
+  setTxt(el.box.sub,'bs',`Q₁ ${d.q1.toFixed(2)} · M ${d.med.toFixed(2)} · Q₃ ${d.q3.toFixed(2)}<br>${L.outl} ${d.outs.length} · n=${d.arr.length}`);
+  const v=document.getElementById('box-skewv'); const txt=S.box.skew.toFixed(2); if(v.textContent!==txt) v.textContent=txt;
+  document.getElementById('box-out').checked=S.box.showOutliers;
+ }
+ // play label
+ const pb=document.getElementById('play'); const pl=S.playing? L.play : L.paused;
+ if(pb.textContent!==pl) pb.textContent=pl;
+}
+
+/* ============================== 입력 ============================== */
+function pos(cv,e){ const r=cv.getBoundingClientRect(); const s=e.touches?e.touches[0]:e; return {x:s.clientX-r.left,y:s.clientY-r.top}; }
+function replay(id){
+ touch(id,200);
+ if(id==='hist'){ S.hist.cur=new Array(S.hist.bins).fill(0); S.hist.grow=0; S.hist.fresh=true; }
+ if(id==='miss'){ S.miss.tm=0; }
+ if(id==='box'){ S.box.grow=0; }
+ if(id==='seas'){ S.seas.phase=0; }
+ if(id==='corr'){ S.corr.jit=0; }
+ if(id==='out'){ S.out.probeT=0; }
+}
+function bind(){
+ // 1
+ document.querySelectorAll('#hist-shape button').forEach(b=>b.onclick=()=>{
+   S.hist.shape=b.dataset.s; S.hist.auto=false; S.hist.cyc=0; touch('hist');
+ });
+ const hb=document.getElementById('hist-bins');
+ hb.addEventListener('input',()=>{ S.hist.bins=+hb.value; S.hist.cur=null; S.hist.grow=0; S.hist.fresh=true; touch('hist'); });
+ document.getElementById('hist-auto').addEventListener('change',e=>{ S.hist.auto=e.target.checked; S.hist.cyc=0; });
+ el.hist.cv.addEventListener('pointermove',e=>{
+   if(!S.hist.cache) return;
+   const p=pos(el.hist.cv,e), w=el.hist.cv._w;
+   const padL=30,padR=10,pw=w-padL-padR;
+   const i=Math.floor((p.x-padL)/(pw/S.hist.bins));
+   S.hist.hover=(i>=0&&i<S.hist.bins)?i:-1;
+ });
+ el.hist.cv.addEventListener('pointerleave',()=>{ S.hist.hover=-1; });
+ // 2
+ document.querySelectorAll('#miss-m button').forEach(b=>b.onclick=()=>{
+   S.miss.method=b.dataset.m; S.miss.filled=true; S.miss.tm=0; S.miss.auto=false; touch('miss',8000);
+ });
+ document.getElementById('miss-reset').onclick=()=>{ S.miss.filled=false; S.miss.tm=0; S.miss.auto=false; touch('miss',8000); };
+ document.getElementById('miss-auto').addEventListener('change',e=>{ S.miss.auto=e.target.checked; });
+ // 3
+ document.querySelectorAll('#out-m button').forEach(b=>b.onclick=()=>{ S.out.metric=b.dataset.m; touch('out'); });
+ const oc=document.getElementById('out-chi');
+ oc.addEventListener('input',()=>{ S.out.chi=+oc.value; touch('out',6000); });
+ // canvas drag (out)
+ const ocv=el.out.cv;
+ let odrag=-1;
+ function outPos(e){
+   const p=pos(ocv,e), w=ocv._w,h=ocv._h;
+   const pad={l:26,r:10,t:14,b:22}, XR=7.2,YR=5.2;
+   const sc=Math.min((w-pad.l-pad.r)/(2*XR),(h-pad.t-pad.b)/(2*YR));
+   const cx=pad.l+(w-pad.l-pad.r)/2, cy=pad.t+(h-pad.t-pad.b)/2;
+   return {x:(p.x-cx)/sc, y:-(p.y-cy)/sc};
+ }
+ ocv.addEventListener('pointerdown',e=>{
+   const q=outPos(e);
+   let best=-1,bd=1e9;
+   S.out.pts.forEach((p,i)=>{ const d=Math.hypot(p.x-q.x,p.y-q.y); if(d<bd){bd=d;best=i;} });
+   if(bd<0.45){ odrag=best; S.out.drag=best; touch('out',6000); try{ocv.setPointerCapture(e.pointerId);}catch(_){} e.preventDefault(); }
+ });
+ ocv.addEventListener('pointermove',e=>{
+   if(odrag<0) return;
+   const q=outPos(e), p=S.out.pts[odrag];
+   p.x=clamp(q.x,-7,7); p.y=clamp(q.y,-5,5);
+ });
+ const oend=()=>{
+   if(odrag>=0){
+     if(odrag===0){ const p=S.out.pts[0]; S.out.probeT=Math.atan2(p.y/3.1,p.x/4.5); }
+     odrag=-1; S.out.drag=-1; touch('out',3000);
+   }
+ };
+ ocv.addEventListener('pointerup',oend); ocv.addEventListener('pointercancel',oend);
+ // 4
+ const cn=document.getElementById('corr-noise');
+ cn.addEventListener('input',()=>{ S.corr.noise=+cn.value; S.corr.auto=false; touch('corr',7000); corrY(); });
+ document.getElementById('corr-auto').addEventListener('change',e=>{ S.corr.auto=e.target.checked; });
+ const ccv=el.corr.cv;
+ let cdrag=-1;
+ function corrPos(e){
+   const p=pos(ccv,e), w=ccv._w,h=ccv._h, R=3.1;
+   const pad={l:24,r:12,t:30,b:20}, pw=w-pad.l-pad.r, ph=h-pad.t-pad.b;
+   const sc=Math.min(pw/(2*R),ph/(2*R)), cx=pad.l+pw/2, cy=pad.t+ph/2;
+   return {x:(p.x-cx)/sc, y:-(p.y-cy)/sc};
+ }
+ ccv.addEventListener('pointerdown',e=>{
+   const q=corrPos(e);
+   let best=-1,bd=1e9;
+   S.corr.pts.forEach((p,i)=>{ const d=Math.hypot(p.x-q.x,p.y-q.y); if(d<bd){bd=d;best=i;} });
+   if(bd<0.35){ cdrag=best; S.corr.drag=best; S.corr.auto=false; touch('corr',7000); try{ccv.setPointerCapture(e.pointerId);}catch(_){} e.preventDefault(); }
+ });
+ ccv.addEventListener('pointermove',e=>{
+   if(cdrag<0) return;
+   const q=corrPos(e), p=S.corr.pts[cdrag];
+   p.x=clamp(q.x,-2.9,2.9); p.y=clamp(q.y,-2.9,2.9);
+   const raw=2.95*Math.atanh(clamp(p.y/2.95,-0.999,0.999));
+   p.z=(raw-0.9*p.x)/1.15;
+ });
+ const cend=()=>{ if(cdrag>=0){ cdrag=-1; S.corr.drag=-1; touch('corr',3000); } };
+ ccv.addEventListener('pointerup',cend); ccv.addEventListener('pointercancel',cend);
+ // 5
+ const sp=document.getElementById('seas-p'), sa=document.getElementById('seas-a');
+ sp.addEventListener('input',()=>{ S.seas.period=+sp.value; touch('seas'); });
+ sa.addEventListener('input',()=>{ S.seas.amp=+sa.value; touch('seas'); });
+ const scv=el.seas.cv;
+ function scrub(e){
+   const p=pos(scv,e), w=scv._w, padL=26,padR=44;
+   S.seas.phase=clamp((p.x-padL)/(w-padL-padR),0,1);
+ }
+ scv.addEventListener('pointerdown',e=>{ S.seas.dragScrub=true; scrub(e); try{scv.setPointerCapture(e.pointerId);}catch(_){} });
+ scv.addEventListener('pointermove',e=>{ if(S.seas.dragScrub) scrub(e); });
+ const send=()=>{ S.seas.dragScrub=false; };
+ scv.addEventListener('pointerup',send); scv.addEventListener('pointercancel',send);
+ // 6
+ const bs=document.getElementById('box-skew');
+ bs.addEventListener('input',()=>{ S.box.skew=+bs.value; touch('box'); });
+ document.getElementById('box-out').addEventListener('change',e=>{ S.box.showOutliers=e.target.checked; });
+ // 전역
+ document.getElementById('play').onclick=()=>{ S.playing=!S.playing; applyLang(); };
+ document.getElementById('reset').onclick=()=>{
+   const lang=S.lang; S=defaults(); S.lang=lang; initOut(); initCorr(); initSeas();
+   S.hist.cache=null; S.box.cache=null; S.miss.cache=null;
+   last={}; applyLang();
+ };
+ document.getElementById('lang').onclick=()=>{ S.lang=S.lang==='ko'?'en':'ko'; applyLang(); };
+ document.getElementById('helpbtn').onclick=()=>openHelp();
+ document.getElementById('mclose').onclick=()=>document.getElementById('modal').classList.remove('open');
+ document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') e.currentTarget.classList.remove('open'); });
+ document.addEventListener('keydown',e=>{
+   if(e.key==='Escape') document.getElementById('modal').classList.remove('open');
+   if(e.code==='Space'&&!/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)){
+     e.preventDefault(); S.playing=!S.playing; applyLang();
+   }
+ });
+}
+function openHelp(){
+ const L=T[S.lang], body=document.getElementById('mbody');
+ body.innerHTML = `<p>${L.m_intro}</p>` + CARDS.map((c,i)=>{
+   const [a,b]=L['t_'+c.id];
+   return `<h3>${pad2(i+1)} ${a}${b?` <span>· ${b}</span>`:''}</h3><p>${L['q_'+c.id]}</p>`;
+ }).join('') + `<p class="mfoot">${L.m_keys}</p>`;
+ document.getElementById('modal').classList.add('open');
+}
+
+/* ============================== 메인 루프 ============================== */
+let lastTs=0;
+function frame(ts){
+ const dt=Math.min(0.05,(ts-(lastTs||ts))/1000); lastTs=ts;
+ update(dt);
+ drawHist(); drawMiss(); drawOut(); drawCorr(); drawSeas(); drawBox();
+ numbers();
+ requestAnimationFrame(frame);
+}
+S=defaults(); initOut(); initCorr(); initSeas();
+bind();
+applyLang();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
