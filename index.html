@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Motion Lab — @zizla</title>
+<meta name="description" content="움직임으로 배우는 데이터 과학. 9대 ML 알고리즘과 탐색적 데이터 분석(EDA)을 Canvas 2D 모션으로 보여 주는 교육용 인터랙티브 웹앱 모음입니다.">
+<meta property="og:title" content="Motion Lab — @zizla">
+<meta property="og:description" content="9대 ML 알고리즘 모션 · 탐색적 데이터 분석(EDA) 모션 — Canvas 2D, 의존성 0.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zizla.github.io/motion_lab/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230F172A'/%3E%3Cpath d='M6 22 L12 12 L18 19 L26 8' stroke='%23F8FAFC' stroke-width='2.4' fill='none' stroke-linejoin='round' stroke-linecap='round'/%3E%3Ccircle cx='26' cy='8' r='2.6' fill='%237C3AED'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#F8FAFC; --ink:#0F172A; --mute:#55607A; --line:#CBD5E1; --card:#FFFFFF; --soft:#EEF2F7;
+  --p:#6D28D9; --r:#DC2626; --b:#1D4ED8; --a:#B45309; --g:#0F766E;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{background:var(--bg)}
+body{
+  background:var(--bg); color:var(--ink); min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.6;
+}
+a{color:inherit}
+:focus-visible{outline:2.5px solid var(--p); outline-offset:3px; border-radius:2px}
+
+/* ── top bar ── */
+.top{border-bottom:1px solid var(--ink); background:rgba(248,250,252,.92); backdrop-filter:saturate(1.2) blur(6px); position:sticky; top:0; z-index:20}
+.bar{max-width:1180px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:12px}
+.mark{flex:none; display:grid; place-items:center; width:30px; height:30px; background:var(--ink); color:#fff; border-radius:4px; font:800 12px/1 var(--mono); letter-spacing:.5px}
+.wm{font-weight:800; letter-spacing:-.3px; font-size:15px; line-height:1}
+.wm small{display:block; margin-top:3px; font:500 11.5px/1 var(--mono); color:var(--mute); letter-spacing:0}
+.bar .sp{flex:1}
+.bar a.gh{font-size:12.5px; color:var(--mute); text-decoration:none; border-bottom:1px solid transparent; padding-bottom:1px}
+.bar a.gh:hover{color:var(--ink); border-bottom-color:var(--ink)}
+
+/* ── hero ── */
+main{max-width:1180px; margin:0 auto; padding:48px 24px 56px}
+.hero{max-width:820px; margin-bottom:40px}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font:700 11px/1 var(--mono); letter-spacing:1.6px; color:var(--mute); text-transform:uppercase; margin:0 0 16px}
+.eyebrow::before{content:""; width:26px; height:1.5px; background:var(--p)}
+h1{margin:0 0 16px; font-size:clamp(28px,4.4vw,46px); line-height:1.18; letter-spacing:-1.2px; font-weight:800; word-break:keep-all}
+h1 em{font-style:normal; color:var(--p)}
+.lede{margin:0; font-size:15px; line-height:1.75; color:var(--mute); max-width:66ch; word-break:keep-all}
+.lede b{color:var(--ink); font-weight:600}
+.spec{display:flex; flex-wrap:wrap; gap:7px; list-style:none; padding:0; margin:20px 0 0}
+.spec li{font:600 11.5px/1 var(--mono); letter-spacing:.2px; color:var(--ink); border:1px solid var(--line); background:var(--card); border-radius:999px; padding:6px 11px}
+
+/* ── cards ── */
+.cards{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; align-items:stretch}
+.card{
+  position:relative; display:flex; flex-direction:column; background:var(--card); border:1px solid var(--ink);
+  text-decoration:none; padding:0; overflow:hidden;
+  transition:transform .16s ease, box-shadow .16s ease;
+}
+.card:hover{transform:translate(-2px,-2px); box-shadow:7px 7px 0 rgba(15,23,42,.09)}
+.card:active{transform:none; box-shadow:2px 2px 0 rgba(15,23,42,.09)}
+.chead{display:flex; align-items:center; gap:10px; padding:16px 20px 0}
+.num{font:800 10.5px/1 var(--mono); letter-spacing:1px; color:#fff; background:var(--ink); border-radius:3px; padding:5px 7px; flex:none}
+.badge{display:inline-flex; align-items:center; gap:6px; margin-left:auto; font:700 10.5px/1 var(--mono); letter-spacing:1.1px; text-transform:uppercase; padding:5px 9px; border-radius:999px; border:1px solid}
+.badge .dot{width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2.4s ease-in-out infinite}
+.badge.live{color:var(--g); border-color:#99D8CF; background:#ECFBF8}
+.badge.soon{color:var(--a); border-color:#EFD3A8; background:#FDF6E9}
+.badge.soon .dot{animation:none}
+@keyframes pulse{0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.35; transform:scale(.8)}}
+.card h2{margin:12px 0 4px; padding:0 20px; font-size:clamp(19px,2.1vw,23px); line-height:1.3; letter-spacing:-.6px; font-weight:800}
+.card h2 .en{display:block; margin-top:6px; font:500 12.5px/1.45 var(--mono); letter-spacing:0; color:var(--mute)}
+.pv{display:block; width:100%; height:132px; margin:16px 0 0; border-top:1px solid var(--soft); border-bottom:1px solid var(--soft); background:#FCFDFE}
+.chips{display:flex; flex-wrap:wrap; gap:6px; padding:14px 20px 0; list-style:none; margin:0}
+.chips li{font-size:11.5px; line-height:1.2; color:var(--ink); background:var(--soft); border-radius:4px; padding:4.5px 8px; white-space:nowrap}
+.chips li.k{background:#F3EEFE; color:#5B21B6; font-weight:600}
+.desc{margin:14px 0 0; padding:0 20px; font-size:13px; line-height:1.7; color:var(--mute); word-break:keep-all}
+.cfoot{margin-top:auto; display:flex; align-items:flex-end; gap:12px; padding:20px 20px 18px}
+.meta{font:500 11.5px/1.5 var(--mono); color:var(--mute); flex:1; min-width:0}
+.cta{flex:none; display:inline-flex; align-items:center; gap:7px; font-weight:800; font-size:13px; letter-spacing:-.2px; color:#fff; background:var(--ink); padding:9px 14px; border-radius:5px; transition:background .14s}
+.card:hover .cta{background:var(--p)}
+.card.soon .cta{background:transparent; color:var(--a); border:1px solid #EFD3A8}
+.card.soon:hover .cta{background:#FDF6E9; color:var(--a)}
+.card.soon{background:linear-gradient(180deg,#FFFFFF 0%,#FBFCFE 100%)}
+
+/* ── footer ── */
+footer{border-top:1px solid var(--line); background:#fff}
+.fwrap{max-width:1180px; margin:0 auto; padding:22px 24px 34px; display:flex; flex-wrap:wrap; gap:8px 20px; font-size:12px; color:var(--mute)}
+.fwrap .sp{flex:1}
+.fwrap code{font:600 11.5px/1 var(--mono); color:var(--ink); background:var(--soft); padding:4px 7px; border-radius:3px}
+.fwrap a{text-decoration:none; border-bottom:1px solid var(--line)}
+.fwrap a:hover{border-bottom-color:var(--ink)}
+
+@media(max-width:900px){
+  main{padding:34px 18px 44px}
+  .cards{grid-template-columns:1fr; gap:16px}
+  .hero{margin-bottom:28px}
+  .pv{height:118px}
+}
+@media(max-width:560px){
+  .bar{padding:11px 16px}
+  main{padding:26px 14px 38px}
+  .card h2{font-size:19px}
+  .desc,.chips,.chead,.cfoot,.card h2{padding-left:16px; padding-right:16px}
+  .cfoot{flex-wrap:wrap}
+  .cta{width:100%; justify-content:center}
+  .fwrap{padding:18px 16px 28px}
+}
+@media(prefers-reduced-motion:reduce){
+  .card,.cta{transition:none}
+  .badge .dot{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="bar">
+    <span class="mark" aria-hidden="true">ML</span>
+    <span class="wm">Motion Lab<small>@zizla</small></span>
+    <span class="sp"></span>
+    <a class="gh" href="https://github.com/zizla/motion_lab">github.com/zizla/motion_lab ↗</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="eyebrow">Interactive motion studies</p>
+    <h1>움직임으로 읽는<br><em>데이터 과학</em></h1>
+    <p class="lede">알고리즘이 데이터 위에서 <b>실제로 계산되는 과정</b>을 Canvas 2D 모션으로 보여 주는 연구실입니다. 경사하강이 직선을 옮기고, 결정 경계가 회전하고, 히스토그램이 자라는 동안 숫자도 함께 움직입니다. 외부 라이브러리 없이 단일 HTML로 동작하고, 휴대폰에서도 열립니다.</p>
+    <ul class="spec">
+      <li>Canvas 2D</li>
+      <li>의존성 0</li>
+      <li>한국어 / English</li>
+      <li>파라미터 실시간 조작</li>
+    </ul>
+  </section>
+
+  <div class="cards">
+
+    <a class="card" href="./ml9/">
+      <div class="chead">
+        <span class="num">01</span>
+        <span class="badge live"><i class="dot" aria-hidden="true"></i>Live</span>
+      </div>
+      <h2>9대 ML 알고리즘 모션<span class="en">Nine ML algorithms, each running on its own data</span></h2>
+      <canvas class="pv" data-kind="ml" aria-hidden="true"></canvas>
+      <ul class="chips">
+        <li>선형 회귀</li>
+        <li>로지스틱 회귀</li>
+        <li>SVM</li>
+        <li>KNN</li>
+        <li>PCA</li>
+        <li>k-Means</li>
+        <li>결정 트리</li>
+        <li>랜덤 포레스트</li>
+        <li>나이브 베이즈</li>
+      </ul>
+      <p class="desc">경사하강·마진·이웃 투표·주성분·군집·분할·앙상블·확률까지, 9개 알고리즘이 저마다의 데이터에서 학습하며 수렴하는 모습을 한 화면에 담았습니다. 카드를 누르면 확대되고, 캔버스 아래 슬라이더로 학습률·K·깊이 같은 파라미터를 직접 바꿀 수 있습니다.</p>
+      <div class="cfoot">
+        <span class="meta">9개 카드 · 파라미터 슬라이더 · ∑ 수식 해설 · KO/EN</span>
+        <span class="cta">열기 →</span>
+      </div>
+    </a>
+
+    <a class="card soon" href="./eda/">
+      <div class="chead">
+        <span class="num">02</span>
+        <span class="badge soon"><i class="dot" aria-hidden="true"></i>준비 중</span>
+      </div>
+      <h2>탐색적 데이터 분석 EDA 모션<span class="en">Six movements of exploratory data analysis</span></h2>
+      <canvas class="pv" data-kind="eda" aria-hidden="true"></canvas>
+      <ul class="chips">
+        <li>히스토그램</li>
+        <li>결측값 대체</li>
+        <li>마할라노비스 이상치</li>
+        <li>피어슨 r</li>
+        <li>계절성 분해</li>
+        <li>상자그림</li>
+      </ul>
+      <p class="desc">모델을 세우기 전에 데이터를 먼저 들여다보는 여섯 가지 움직임 — 분포가 막대를 키우고, NaN 셀이 대체값으로 날아가고, 공분산 타원이 이상치를 가려내고, 잡음 슬라이더가 상관계수를 흔듭니다. 통계량은 매 프레임 실제로 계산합니다.</p>
+      <div class="cfoot">
+        <span class="meta">6개 모듈 · 곧 이 주소(<code>./eda/</code>)에서 열립니다</span>
+        <span class="cta">곧 공개</span>
+      </div>
+    </a>
+
+  </div>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <span>Motion Lab — 교육용 인터랙티브 웹앱 · 2026</span>
+    <span class="sp"></span>
+    <span><a href="https://github.com/zizla/motion_lab">저장소</a></span>
+    <span><a href="https://github.com/zizla">@zizla</a></span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+(function () {
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var views = [];
+  Array.prototype.forEach.call(document.querySelectorAll("canvas.pv"), function (cv) {
+    views.push({ cv: cv, ctx: cv.getContext("2d"), kind: cv.getAttribute("data-kind"), w: 0, h: 0 });
+  });
+  if (!views.length) return;
+
+  /* deterministic pseudo-random */
+  function lcg(seed) {
+    var s = seed >>> 0;
+    return function () {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = Math.max(1e-9, rnd()), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.283185307 * v);
+  }
+
+  /* fixed point cloud for card 01 */
+  var pts = (function () {
+    var rnd = lcg(20261127), out = [], i, j, c, cx, cy;
+    for (c = 0; c < 2; c++) {
+      cx = c === 0 ? 0.30 : 0.68; cy = c === 0 ? 0.32 : 0.66;
+      for (i = 0; i < 34; i++) {
+        out.push({ x: cx + gauss(rnd) * 0.085, y: cy + gauss(rnd) * 0.085, c: c });
+      }
+    }
+    return out;
+  })();
+
+  function box(ctx, w, h) {
+    ctx.strokeStyle = "rgba(15,23,42,.055)";
+    ctx.lineWidth = 1;
+    var step = 22, x, y;
+    ctx.beginPath();
+    for (x = step; x < w; x += step) { ctx.moveTo(Math.round(x) + 0.5, 0); ctx.lineTo(Math.round(x) + 0.5, h); }
+    for (y = step; y < h; y += step) { ctx.moveTo(0, Math.round(y) + 0.5); ctx.lineTo(w, Math.round(y) + 0.5); }
+    ctx.stroke();
+  }
+
+  function drawML(v, t) {
+    var ctx = v.ctx, w = v.w, h = v.h, i, p, x, y;
+    ctx.clearRect(0, 0, w, h);
+    box(ctx, w, h);
+
+    /* decision boundary: gentle tilt + offset, like a boundary settling */
+    var cx = w * 0.49, cy = h * 0.49;
+    var a = -0.72 + 0.24 * Math.sin(t * 0.5);
+    var off = Math.sin(t * 0.33) * h * 0.045;
+    var nx = Math.cos(a), ny = Math.sin(a), dx = -ny, dy = nx;
+    var L = Math.max(w, h) * 1.6;
+    var px = cx + nx * off, py = cy + ny * off;
+
+    /* margin band */
+    ctx.fillStyle = "rgba(109,40,217,.055)";
+    ctx.beginPath();
+    ctx.moveTo(px - dx * L + nx * 12, py - dy * L + ny * 12);
+    ctx.lineTo(px + dx * L + nx * 12, py + dy * L + ny * 12);
+    ctx.lineTo(px + dx * L - nx * 12, py + dy * L - ny * 12);
+    ctx.lineTo(px - dx * L - nx * 12, py - dy * L - ny * 12);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = "#6D28D9";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(px - dx * L, py - dy * L);
+    ctx.lineTo(px + dx * L, py + dy * L);
+    ctx.stroke();
+
+    for (i = 0; i < pts.length; i++) {
+      p = pts[i];
+      x = p.x * w + Math.sin(t * 1.1 + i) * 0.7;
+      y = p.y * h + Math.cos(t * 0.9 + i) * 0.7;
+      ctx.fillStyle = p.c === 0 ? "#DC2626" : "#1D4ED8";
+      ctx.beginPath();
+      ctx.arc(x, y, 2.4, 0, 6.283185307);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "#6D28D9";
+    ctx.font = "700 9.5px ui-monospace,Menlo,monospace";
+    ctx.fillText("P(y=1) = 0.5", 10, 14);
+  }
+
+  /* histogram shape */
+  var bins = (function () {
+    var out = [], i, x, g1, g2, v, sum = 0;
+    for (i = 0; i < 15; i++) {
+      x = i / 14;
+      g1 = Math.exp(-Math.pow((x - 0.36) / 0.17, 2));
+      g2 = 0.42 * Math.exp(-Math.pow((x - 0.70) / 0.11, 2));
+      out.push(g1 + g2 + 0.06);
+    }
+    for (i = 0; i < out.length; i++) sum += out[i];
+    for (i = 0; i < out.length; i++) out[i] = out[i] / sum;
+    return out;
+  })();
+
+  function drawEDA(v, t) {
+    var ctx = v.ctx, w = v.w, h = v.h, i, n = bins.length;
+    ctx.clearRect(0, 0, w, h);
+    box(ctx, w, h);
+
+    var padL = 14, padR = 14, padT = 14, padB = 18;
+    var iw = w - padL - padR, ih = h - padT - padB;
+    var bw = iw / n, gap = Math.min(3, bw * 0.22);
+    var grow = reduce ? 1 : Math.min(1, 0.25 + 0.75 * ((t % 6) / 1.2));
+
+    ctx.strokeStyle = "rgba(15,23,42,.22)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT + ih + 0.5);
+    ctx.lineTo(padL + iw, padT + ih + 0.5);
+    ctx.stroke();
+
+    for (i = 0; i < n; i++) {
+      var breath = 1 + (reduce ? 0 : 0.06 * Math.sin(t * 1.1 + i * 0.5));
+      var bh = Math.max(2, bins[i] * ih * 2.35 * grow * breath);
+      var bx = padL + i * bw + gap / 2;
+      ctx.fillStyle = i < n * 0.45 ? "rgba(29,78,216,.82)" : "rgba(15,23,42,.78)";
+      ctx.fillRect(bx, padT + ih - bh, Math.max(1.5, bw - gap), bh);
+      ctx.fillStyle = "rgba(109,40,217,.9)";
+      ctx.fillRect(bx, padT + ih - bh, Math.max(1.5, bw - gap), 1.6);
+    }
+
+    /* density curve */
+    ctx.strokeStyle = "#6D28D9";
+    ctx.lineWidth = 1.7;
+    ctx.beginPath();
+    for (i = 0; i <= 60; i++) {
+      var u = i / 60, k = u * (n - 1), k0 = Math.floor(k), fr = k - k0;
+      var hh = (bins[Math.min(n - 1, k0)] * (1 - fr) + bins[Math.min(n - 1, k0 + 1)] * fr);
+      var px = padL + u * iw, py = padT + ih - hh * ih * 2.35 * grow;
+      py = Math.max(padT + 2, py);
+      i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+    }
+    ctx.stroke();
+
+    /* mean marker */
+    var mean = padL + iw * 0.36;
+    ctx.strokeStyle = "#DC2626";
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(mean + 0.5, padT + 2);
+    ctx.lineTo(mean + 0.5, padT + ih);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "#55607A";
+    ctx.font = "700 9.5px ui-monospace,Menlo,monospace";
+    ctx.fillText("x̄", mean + 5, padT + 12);
+    ctx.fillStyle = "#6D28D9";
+    ctx.fillText("KDE", 10, 14);
+  }
+
+  function resizeAll() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    views.forEach(function (v) {
+      var r = v.cv.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      v.w = r.width;
+      v.h = r.height;
+      v.cv.width = Math.round(r.width * dpr);
+      v.cv.height = Math.round(r.height * dpr);
+      v.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    });
+  }
+
+  var raf = 0, t0 = performance.now();
+  function frame(now) {
+    var t = (now - t0) / 1000;
+    views.forEach(function (v) {
+      if (!v.w) return;
+      if (v.kind === "ml") drawML(v, t); else drawEDA(v, t);
+    });
+    raf = requestAnimationFrame(frame);
+  }
+  function start() {
+    if (raf || reduce) return;
+    raf = requestAnimationFrame(frame);
+  }
+  function stop() {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+  }
+
+  resizeAll();
+  if (reduce) {
+    views.forEach(function (v) { if (v.kind === "ml") drawML(v, 1.2); else drawEDA(v, 1.2); });
+  } else {
+    start();
+  }
+
+  var rt = 0;
+  window.addEventListener("resize", function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      resizeAll();
+      if (reduce) views.forEach(function (v) { v.kind === "ml" ? drawML(v, 1.2) : drawEDA(v, 1.2); });
+    }, 120);
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) stop(); else start();
+  });
+})();
+</script>
+</body>
+</html>
